@@ -14,7 +14,7 @@ $indent-var: 1.3em !default;
 
 /* system typefaces */
 $serif: Georgia, Times, serif !default;
-$sans-serif: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI",
+$sans-serif: 'Pretendard', -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Roboto", "Segoe UI",
   "Helvetica Neue", "Lucida Grande", Arial, sans-serif !default;
 $monospace: Monaco, Consolas, "Lucida Console", monospace !default;
 
@@ -44,7 +44,7 @@ $type-size-7: 0.6875em !default; // ~11px
 $type-size-8: 0.625em !default; // ~10px
 
 /* headline scale */
-$h-size-1: 1.563em !default; // ~25.008px
+$h-size-1: 2em/*1.563em*/ !default; // ~25.008px
 $h-size-2: 1.25em !default; // ~20px
 $h-size-3: 1.125em !default; // ~18px
 $h-size-4: 1.0625em !default; // ~17px
@@ -155,9 +155,9 @@ $max-width: $x-large !default;
    Grid
    ========================================================================== */
 
-$right-sidebar-width-narrow: 200px !default;
-$right-sidebar-width: 300px !default;
-$right-sidebar-width-wide: 400px !default;
+$right-sidebar-width-narrow: 100px !default;
+$right-sidebar-width: 200px !default;
+$right-sidebar-width-wide: 250px !default;
 
 /*
    Other
