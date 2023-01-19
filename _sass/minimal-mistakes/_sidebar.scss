@@ -212,6 +212,10 @@
       float: left;
     }
 
+    li:first-child {
+      display: none;
+    }
+
     li a {
       display: block;
     }
