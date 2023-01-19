@@ -12,7 +12,7 @@
 
 # theme                  : "minimal-mistakes-jekyll"
 # remote_theme           : "mmistakes/minimal-mistakes"
-minimal_mistakes_skin    : "air" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Site Settings
 locale                   : "ko-KR"
@@ -105,30 +105,30 @@ analytics:
 # Site Author
 author:
   name             : "RokWon K"
-  avatar           : "/assets/avatar.jpeg"
+  avatar           : "/assets/avatar.jpg"
   bio              : "**Life Designer**"
   location         : "Bucheon, Korea"
   email            : # "rokwon79@gmail.com"
   links:
-    - label: "Email"
+    - label: "" # "Email"
       icon: "fas fa-fw fa-envelope-square"
       url: "mailto:rokwon79@gmail.com"
-    - label: "Website"
+    - label: "" # "Website"
       icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
-    - label: "Twitter"
+    - label: "" # "Twitter"
       icon: "fab fa-fw fa-twitter-square"
       # url: "https://twitter.com/"
-    - label: "Facebook"
+    - label: "" # "Facebook"
       icon: "fab fa-fw fa-facebook-square"
       # url: "https://facebook.com/"
-    - label: "GitHub"
+    - label: "" # "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/RokwonK"
-    - label: "LinkedIn"
+    - label: "" # "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/%EB%A1%9D%EC%9B%90-%EA%B9%80-b6917419a/"
-    - label: "Instagram"
+    - label: "" # "Instagram"
       icon: "fab fa-fw fa-instagram"
       url: "https://www.instagram.com/rokwon_k/"
 
