@@ -43,6 +43,7 @@ comments:
   utterances:
     theme                : "github-light" # "github-light" (default), "github-dark"
     issue_term           : "pathname" # "pathname" (default)
+    label                : "comment"
   giscus:
     repo_id              : # Shown during giscus setup at https://giscus.app
     category_name        : # Full text name of the category
@@ -96,9 +97,9 @@ social:
 
 # Analytics
 analytics:
-  provider               : false # false (default), "google", "google-universal", "google-gtag", "custom"
+  provider               : "google-gtag" # false (default), "google", "google-universal", "google-gtag", "custom"
   google:
-    tracking_id          :
+    tracking_id          : "G-LF1SFSZ2NQ"
     anonymize_ip         : # true, false (default)
 
 
