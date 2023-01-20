@@ -16,7 +16,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "ko-KR"
-title                    : "Rokwon의 서재"
+title                    : "Rokwon"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "RokWon K"
@@ -25,7 +25,7 @@ url                      : "https://rokwonk.com" # the base hostname & protocol 
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "RokwonK/RokwonK.github.io" # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
-logo                     : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
+logo                     : "/assets/images/logo.png" # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
 masthead_title           : # overrides the website title displayed in the masthead, use " " for no title
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
@@ -106,7 +106,7 @@ analytics:
 # Site Author
 author:
   name             : "RokWon K"
-  avatar           : "/assets/avatar.jpg"
+  avatar           : "/assets/images/avatar.jpg"
   bio              : "Life Design with Software Engineering"
   location         : "Bucheon, Korea"
   email            : # "rokwon79@gmail.com"
