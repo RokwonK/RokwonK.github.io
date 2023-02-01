@@ -9,7 +9,7 @@ tags:
 출처: [nestjs](https://github.com/nestjs/nest)
 {: .image-caption style="font-size: 14px;" }  
 
-기존 Node.js를 이용한 서버 프레임워크는 대부분 Express를 많이 사용하였다. 하지만 Express의 최대 장점이자 단점은 자유도가 너무 높다는 것이었다. 프레임워크단에서 관리하는 레벨보다는 **개발자가 관리해야하는 영역이 너무 넓다**보니 개발팀마다 다양한 형태를 보였고 성능 문제나 효율성이 떨어지는 경우가 많았다. 이러한 문제를 보완하기위해 Nest는 **DI와 IoC의 개념을 차용, 프레임워크 레벨에서 목적별로 기능을 나누고 관심사를 분리**하였고 그렇게 *테스트하기 좋은 환경, 느슨한 결합, 확장성 있으며 쉬운 유지보수성*{: .gray}을 가지는 프레임워크로 탄생하였다.  
+기존 Node.js를 이용한 서버 프레임워크는 대부분 Express를 많이 사용하였다. 하지만 Express의 최대 장점이자 단점은 자유도가 너무 높다는 것이었다. 프레임워크단에서 관리하는 레벨보다는 **개발자가 관리해야하는 영역이 너무 넓다**보니 개발팀마다 다양한 형태를 보였고 성능 문제나 효율성이 떨어지는 경우가 많았다. 이러한 문제를 보완하기위해 Nest는 **DI와 IoC의 개념을 차용, 프레임워크 레벨에서 목적별로 기능을 나누고 관심사를 분리**하였고 그렇게 *테스트하기 좋은 환경, 느슨한 결합, 확장성 있으며 높은 유지보수성*{: .gray}을 가지는 프레임워크로 탄생하였다.  
 
 본격적으로 nest가 내제하고 있는 기능들을 알아보자. nest는 요청이 들어오고 응답을 처리할때까지 여러 과정을 거친다. 각 과정에서는 개발자가 처리할 내용을 정의할 수 있다.  
 아래 그림은 nest가 제공하는 목적별 기능들을 흐름순대로 보여주는 이미지이다. 각 기능들은 모든 route에 글로벌하게 적용할 수도 있으며 특정 route에만 적용시킬 수도 있다. 이제 요청/응답의 사이클을 순서대로 알아보면서 nest의 핵심철학을 이해해보자.  
@@ -53,10 +53,6 @@ Middleware(이하 미들웨어)는 요청이 들어와 엔드포인트로 접근
 - 그 자리에서 해당 **요청을 종료**시킬 수도 있다.
 - 함수실행 후 다음미들웨어를 호출 또는 엔드포인트로 넘길 수도 있다.
 - 인증이나 로깅, 데이터의 유효성 검사등을 미들웨어 처리한다.  
-
-![middleware](https://docs.nestjs.com/assets/Middlewares_1.png){: .align-center style="width: 90%;"}  
-출처: [nestjs middleware](https://docs.nestjs.com/middleware)
-{: .image-caption style="font-size: 14px;" }  
 
 개발자들은 미들웨어를 두 가지 방식으로 만들 수 있다. 바로 클래스형과 함수형이다.
 ```ts
@@ -175,7 +171,7 @@ bootstrap();
 오직 **접근 권한(권한, 역할, ACL)에 관한 책임**만을 가지고 있다. 내/외부적인 인증, 인가, 보안과 관련된 확인을 진행한다. 각 Guard는 boolean 값을 리턴하는데 false일 경우 인증실패로 block된다.  
 
 **💡 Guard와 미들웨어의 Authorization(권한 부여)에서의 차이점**  
-미들웨어는 그 다음에 호출되는 코드에 대해 알 수가 없다. 그러나 Guard는 실행컨텍스트에 접근이 가능하여 다음 실행될 항목을 알고 있다. request-response cycle 중 정확한 지점에 로직을 삽입/실행할 수 있다.  
+미들웨어는 그 다음에 호출되는 코드에 대해 알 수가 없다. 그러나 Guard는 Execution Context에 접근이 가능하여 다음 실행될 항목을 알고 있다. request-response cycle 중 정확한 지점에 로직을 삽입/실행할 수 있다.  
 {: .notice--info}  
 
 Guard는 다음과 같은 방법으로 작성할 수 있다.  
@@ -234,11 +230,30 @@ Guard는 Role(역할)을 위해서 강력한 기능을 제공한다. 역할을 �
 - 기본 기능에서 **확장된 기능 추가**
 - 특정 조건에 따라 함수를 **overriding**(캐시의 목적)  
 
+Interceptors 아래와 같이 작성가능하다.  
+```ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    console.log('Before...');
+
+    const now = Date.now();
+    return next.handle().pipe(map((data) => data));
+  }
+}
+```  
+`NestInterceptor` interface를 구현하고 `intercept()` 메서드 내에 로직을 작성한다. interceptor는 두번째 인자로 `CallHandler`을 받는데 이 인자의 `handle()` 메서드를 이용하여 원하는 지점에 route handler를 실행시킬수 있다. `handle()` 메서드는 Observable을 반환한다. 이를 이용해서 응답값을 조작할 수 있다. `handle()` 이후 체이닝을 통해 응답값을 조작, 에러처리 등을 진행할 수 있다.  
+
+Interceptor는 `@UseInterceptors()` 데코레이터를 이용해서 특정 라우트에만 적용할 수 있고 `useGlobalInterceptors()` 메서드내에 작성하여 전역적으로 적용할 수도 있다.  
 
 <br />  
 
 ### Pipes
-**요청 데이터의 변형 및 평가 역할**을 한다. data validation과 data transformation을 위해 사용한다. 이 작업 후 요청을 처리하게 된다. 빌트인으로 제공되는 pipe도 있으며(대개 원시타입 변형/평가) 직접 작성할 수도 있다.  
+**요청 데이터의 변형 및 평가 역할**을 한다. data validation과 data transformation을 위해 사용한다. 이 작업 후 요청을 처리하게 된다. 빌트인으로 제공되는 pipe도 있으며(대개 원시타입의 변형/평가) 직접 작성할 수도 있다.  
 
 요청 `Body`나 `Query`, `Param`에 대해서 올바른 key, type으로 요청을 받았는지 확인하는데 사용한다.  
 ```ts
@@ -251,45 +266,81 @@ async findOne(@Query('id', ParseIntPipe) id: number) {
 <br />  
 
 ### Controllers  
-각 Route에 대해 Endpoint를 정의한다.  
-HTTP의 요청을 받고 응답을 내보내는 역할
+Controller는 **특정 라우트에 대한 요청과 응답을 처리**한다. Controller내부는 각 라우트들을 처리할 메서드들로 이루어져있다. Nest 프레임워크에 Controller라는 것을 알리고 의존성, 생명주기를 관리하기위해 클래스 위에 `@Controller()` 데코레이터를 붙인다.  
+
+```ts
+import { Controller, Get, Req } from '@nestjs/common';
+import { Request } from 'express';
+
+@Controller('data')
+export class DataController {
+  @Get()
+  findAll(@Req() request: Request): string {
+    return 'return data';
+  }
+}
+```  
+각 특정 라우트마다 HTTP 메서드, Param, Query, Body 등을 데코레이터를 이용해 정의할 수 있다. Controller 내 하나의 함수는 하나의 라우트를 의미한다.  
+
+<br />  
 
 ### Providers
-어플리케이션의 의존성을 생성/관리하하는 nest의 핵심 개념이다.  
-한 부분이 될 수 있는 service, class, repostoriy, helper등이 프로바이더가 될 수 있다.  
+비즈니스 로직을 구현하고 수행하는 역할을 맡는 모든 개체들이다. service, repository, factory, helper 등 모든 기능들이 Provider가 될 수 있다. 이렇게 역할을 나누어 객체들을 쪼개지 않고 Controller에서 모든 로직을 처리할 수 있지만 코드가 길어지고 유지/보수, 재사용성이 매우 떨어진다. 반대로 역할별로 나누고 필요에 따라 연계하여 사용한다면 재사용성이 높아지고 유지/보수가 보다 수월해진다. 위와 같은 장점과 더불어 Nest의 Provider가 가지는 장점은 **의존성을 주입할 수 있다**는 것이다. 
 
-Nest의 핵심. 소프트웨어 공통 개념 중 데이터를 처리하는 비지니스 로직처리 기능을 가지는 클래스들이 프로바이더가 될 수 있다.(서비스, 레포지토리, 팩토리, 헬퍼 클래스 등이 프로파이더)  
-왜 근데 이것이 Nest의 핵심인가? 비지니스 로직처리기능을 가진것은 클래스의 역할이고 **프로바이더의 역할은 dependency로 주입될 수 있다는 것**이다.  
-`@Injectable()` 데코레이터가 붙은 클래스는 프로바이더가 된다. 여기서 DI와 IoC의 개념이 필요하다.  
+**💡 의존성 주입(DI, Dependency Injection)**  
+의존관계의 객체를 **외부에서 생성 및 주입함**으로써 결합도를 줄이고 유연한 코드를 만들 수 있다. 단순히 객체를 외부에서 주입하는 것 뿐만아니라 **객체가 아닌 인터페이스에 의존관계를 가지는 것**까지 DI라고 부른다.  
+(Typescript에서는 컴파일 시 interface가 사라진다. Nest에서 인터페이스에 의존성을 가지기 위해선 Custom Provider를 사용해야한다.)  
+{: .notice--info}  
 
+**💡 제어의 역전(IoC, Inversion Of Control)**  
+개발자가 직접 의존관계의 객체를 생성하고 주입하는 형식이 아닌 **생성과 주입의 제어권을 프레임워크(컨테이너)에 넘겨주는 것**을 의미한다. 관리에 대한 제어권이 개발자 -> 프로그램으로 역전된다고 하여 '제어의 역전'이라고 한다.
+{: .notice--info}  
+
+
+Provider를 구현하는 방법은 아래와 같다. 클래스에 `@Injectable()` 데코레이터는 DI가 가능하다는 것을 Nest IoC에게 알리는 역할을 한다.  
 ```ts
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class DatabaseService {
   getData(): string {
-    return 'This is some data from the database';
+    return 'some data';
   }
 }
-
-```
-
-**💡 DI와 IoC**  
-의존성 주입 및 관리 기능
-{: .notice--info}  
-
-
-### Modules  
-모듈은 Provi
+```  
 
 <br />  
 
-### Middleware vs Guard vs Interceptor의 차이점
-공부를 하다면 위에 제시한 세 기능의 역할이 겹치는 것 같다.  
+### Modules  
+**Provider들간의 연관관계, 의존성을 구성해주는 역할**을 한다. 앞서 작성한 Controller와 Provider들을 Module내에 정의하여 연관관계를 Nest 프레임워크에 알린다. Nest 프레임워크는 이들을 조합해 **서로의 의존관계를 생성/주입**해준다. 모듈은 다른 모듈의 provider 또한 참조할 수도 있다. Module의 특징은 아래와 같다.
+- `controllers`로 생성할 Controller 세트를 받는다
+- `providers`로 주입될 Provider 세트를 인자로 받는다.
+- `imports`로 다른 Module을 받는다(다른 Module에서 `exports`한 provider를 사용할 수 있다.)
+- `exports`로 다른 Module에서 사용가능한 이 모듈의 provider를 정의한다.
+- 위에 받은 인자들을 생성/주입하여 하나의 모듈을 만든다.  
 
+아래는 Controller에서 Provider를 주입받고 Provider를 외부에서 사용가능하게 export하는 예시코드다.
+```ts
+import { Module } from '@nestjs/common';
+import { CatsController } from './cats.controller';
+import { CatsService } from './cats.service';
 
-### 추가 - Decorators
+@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+  exports:[CatsService]
+})
+export class CatsModule {}
+```
 
+<br />  
 
-참고
-- [nest lifeCycle](https://dkrnfls.tistory.com/83)
+### Middleware vs Guard vs Interceptor
+**Middleware** -> Authentication(인증 - 토큰 유효성검사), cors  
+**Guard** -> Authorization(권한부여) 역할, ExecutionContext로 접근 가능  
+**Interceptor** -> request/response 데이터 조작, Stream overriding(캐시처리)  
+
+<br />  
+
+### Decorators 참고
+[Exploring EcmaScript Decorators](https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841)  
