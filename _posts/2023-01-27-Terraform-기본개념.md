@@ -1,7 +1,6 @@
 ---
 title: "Terraform 기본개념"
 categories: Infrastructure
-summary: "asdfasdfasdf"
 tags:
   - Terraform
 ---
