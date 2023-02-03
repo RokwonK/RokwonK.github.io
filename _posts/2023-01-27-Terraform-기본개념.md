@@ -182,7 +182,7 @@ $ terraform destroy
 Terraform에서 일반 프로그래밍 언어처럼 지역변수, 입력변수 등을 사용할 수 있다. 각 변수마다 활용방안이 다르다. 
 
 지역변수 선언 키워드인 `locals`이다. 현재 파일에서만 사용이 가능하다. **`locals` 블록내 key(키), value(값)로 선언**하며 값들은 연산(merge, concat, max)하여 작성할 수 있다.  
-```locals  
+```hcl  
 locals {
   common_tags = {
     Service = local.service_name
