@@ -30,7 +30,8 @@ Infrastructure
 ### Terraform 준비
 [Terraform 설치 및 기본개념](https://rokwonk.com/infrastructure/Terraform-%EA%B8%B0%EB%B3%B8%EA%B0%9C%EB%85%90/)에 대해서는 이미 포스팅하였다. 시작 전 `provider`로 클라우드 및 계정을 설정해주자. 필자는 `main.tf` 파일을 만들고 아래와 같이 작성하였다.
 ```hcl
-# main.tf
+# ./main.tf  
+
 provider "aws" {
   region                   = "ap-northeast-2"
   shared_config_files      = ["~/.aws/config"]
@@ -61,13 +62,16 @@ variable "vpc_cidr" {
   type = string
 }
 
-variable "vpc_name" {
+variable "name" {
   type = string
+}
+
+variable "tags" {
 }
 
 # 생성 리소스
 resource "aws_vpc" "vpc" {
-  cidr_block = var.vpc_cidr # "10.0.0.0/16"
+  cidr_block = var.vpc_cidr
   tags = merge(
     {
       Name = format("%s-vpc", var.name)
@@ -363,6 +367,8 @@ resource "aws_eip_association" "eip_association" {
 
 마무리로 출력할 값들을 설정해준다.  
 ```hcl  
+# modules/ec2/main.tf  
+
 output "public_ip" {
   value = aws_eip.eip.public_ip
 }
@@ -379,12 +385,95 @@ output "ec2_id" {
 <br />  
 
 ### 루트 모듈 구현하기
-필요한 리소스를 생성하는 로직을 모두 작성하였다. 이제 이 로직을 불러오고 실제로 생성할 수 있도록하는 루트 모듈을 만들기만 하면 된다.
+필요한 리소스를 생성하는 로직을 모두 작성하였다. 이제 이 로직을 불러오고 실제로 생성할 수 있도록하는 루트 모듈을 만들기만 하면 된다. 루트 디렉터리 `main.tf`에 생성한 모듈들을 불러오는 로직을 작성해보자.  
+
+`vpc cidr`와 `subnet`정보를 명령어나 파일로 입력받을 수 있도록하고 자주쓰이는 name과 같은 것은 지역변수로 설정해준다.  
+```hcl
+# ./main.tf  
+
+variable "vpc_cidr" {
+}
+
+variable "public_subnets" {
+}
+
+locals {
+  name = "rokwon"
+}
+```  
+
+이제 구현한 모듈을 불러오는 로직을 작성해보자. `module` 키워드와 `source`에 path를 입력하여 불러올 수 있다. 그리고 각 모듈마다 필요한 입력변수를 작성해준다. VPC, Security Group, EC2를 불러와 주었고 `depends_on` 속성은 의존성을 명시하는 것이다. 즉, VPC 생성-> 보안그룹 생성 -> EC2 순서대로 생성된다.  
+```hcl
+# VPC
+module "vpc_main" {
+  source         = "./modules/vpc"
+  name           = local.name
+  vpc_cidr       = var.vpc_cidr
+  public_subnets = var.public_subnets
+  tags           = {}
+}
+
+# Security Group
+module "security_group" {
+  source = "./modules/security_group"
+  vpc_id = module.vpc_main.vpc_id
+  depends_on = [
+    module.vpc_main
+  ]
+}
+
+# EC2
+module "ec2_public" {
+  source = "./modules/ec2"
+  name   = local.name
+  tags   = {}
+
+  public_subnet_ids = module.vpc_main.public_subnet_ids
+  security_group_id = module.security_group.id
+  depends_on = [
+    module.security_group
+  ]
+}
+```
 
 <br />  
 
-### 완성! 서버로 접속해보기  
-ec2에 연결된 기본 도메인으로 접속해보기
+### terraform.tfvars 파일에 입력값 세팅하기
+방금 작성한 루트모듈의 입력변수(variable)들은 terrafrom 명령어의 옵션으로 직접 주입이 가능하다. 또 다른 방법으로는 입력값을 작성된 파일을 주입할 수도 있다. `.tfvars` 확장자를 가진 파일이 그 역할을 한다. 그중에서 `terraform.tfvars`파일은 명령어에 명시하지 않아도 자동으로 주입된다. 우리는 이 `terraform.tfvars` 파일을 작성한다.  
+
+루트모듈에서 받는 입력값이 2개밖에 없기때문에 간단하다. `vpc cidr`을 입력받고 public subnet 정보도 작성한다. 
+```hcl
+# ./terraform.tfvars
+
+vpc_cidr = "10.0.0.0/16"
+
+public_subnets = {
+  a = {
+    zone = "ap-northeast-2a"
+    cidr = "10.0.0.0/24"
+  }
+}
+```
+
+<br />  
+
+### 구현완료, 실제 인프라에 적용하기
+준비는 끝났다. 서론에 첨부한 이미지대로 코드 구현은 완성하였다. 이제 terraform 명령어를 통해 실제 인프라에 적용해보자.  
+
+루트 위치에서 모듈들을 참조하고 있는 init 명령어로 의존성을 다운받자.
+```bash
+$ terraform init
+```  
+
+생성될 인프라의 정보 확인을 위해 plan 명령어를 사용해볼 수 있다.
+```bash
+$ terraform plan
+```  
+
+마지막 apply를 한다면 잠깐의 시간이 흐른 후 인프라가 배포된다!
+```bash
+$ terraform apply
+```
 
 <br />  
 
