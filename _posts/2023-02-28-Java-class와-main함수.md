@@ -1,8 +1,8 @@
 ---
 title: "[Java] class와 main함수(ft. 접근제어자)"
-categories: Language
+categories: Java
 tags:
-  - java
+    - java
 ---
 
 

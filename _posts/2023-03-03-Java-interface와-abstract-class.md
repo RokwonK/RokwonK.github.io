@@ -1,8 +1,7 @@
 ---
 title: "[Java] interface와 abstract class의 목적"
-categories: Language
+categories: Java
 tags:
-  - java
   - 객체지향
 ---  
 

@@ -1,8 +1,8 @@
 ---
 title: "Java 개발, 실행을 위한 도구들(JDK, JRE, JVM)"
-categories: Language
+categories: Java
 tags:
-  - java
+  - JVM
 ---
 
 Java 개발을 시작할때 필연적으로 JDK, JRE, JVM과 같은 개념들과 부딪히게 된다. 이 포스팅에서는 이 개념들의 대해 정리해보았다.  

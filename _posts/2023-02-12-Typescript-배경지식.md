@@ -1,6 +1,6 @@
 ---
 title: "Typescript 배경지식"
-categories: Language
+categories: JavaScript
 tags:
   - nodejs
   - Javascript

@@ -1,6 +1,6 @@
 ---
 title: "Javascript 모듈 시스템의 역사"
-categories: Language
+categories: JavaScript
 tags:
   - nodejs
   - Javascript
