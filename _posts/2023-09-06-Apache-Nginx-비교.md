@@ -24,7 +24,7 @@ Nginx가 출시되기 이전에는 Apache가 웹 서버 생태계를 이끌어 �
 
 Apache는 멀티 프로세스 방식으로 동작한다. Connection이 들어오면 하나의 Process를 만들고 해당 Connection을 담당한다. 즉, **Connection과 Process가 1:1 관계**를 맺는다. 물론, Process 생성 비용은 매우 비싸기 때문에 일정량의 Process를 미리 만들어 놓고 Connection이 들어올때 만들어 놓은 Process를 가져다 쓰는 Prefork 방식을 사용한다.  
 
-![멀티 프로세스 방식 처리](https://github.com/AUSG/2023-No-Remember-Yes-Record/assets/52196792/b81ab8e9-d391-4ed0-bdf1-c7ea9191897f){: .align-center style="width: 70%;"}  
+![멀티 프로세스 방식 처리](https://github.com/AUSG/2023-No-Remember-Yes-Record/assets/52196792/f2e74657-60b8-46c6-bf4f-1cd88fd24425){: .align-center style="width: 70%;"}  
 멀티 프로세스(prefork 방식)
 {: .image-caption style="font-size: 14px;" }   
 
