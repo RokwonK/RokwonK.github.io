@@ -37,34 +37,48 @@ Nginx가 출시되기 이전에는 Apache가 웹 서버 생태계를 이끌어 �
 Apache는 멀티 프로세스 방식으로 동작한다. Connection이 들어오면 하나의 Process를 만들고 해당 Connection을 담당한다. 즉, **Connection과 Process가 1:1 관계**를 맺는다. 물론, Process 생성 비용은 매우 비싸기 때문에 일정량의 Process를 미리 만들어 놓고 Connection이 들어올때 만들어 놓은 Process를 가져다 쓰는 Prefork 방식을 사용한다.  
 
 ![멀티 프로세스 Prefork 방식](https://github.com/kids-ground/shout-backend/assets/52196792/cc7a3d85-feaa-4891-a1f2-9ce510f74953){: .align-center style="width: 50%;"}  
-멀티 프로세스 Prefork 방식   
+멀티 프로세스 Prefork 방식  
 {: .image-caption style="font-size: 14px;" }  
 
 Prefork 방식으로 Process 생성비용을 아낄 수 있었지만 멀티 프로세스 방식 자체가 몇 가지 고질적인 문제를 초래한다. 프로세스간 **Context-Switching은 비용이 많이 들며 CPU에 큰 부하**를 준다. 또한 Process 개수가 늘어남에 따라 **많은 메모리를 사용하게 되고 메모리 부족 현상**이 일어날 수 있다. 이러한 문제들은 동시 커넥션 수 10,000개가 넘어갈때 도드라지고 커넥션을 잃어버리는 문제가 빈번하게 일어났다.(C10K 문제 발생)  
 
-Nginx는 이러한 C10K 문제를 보완하고자 등장하게 되었다. Apache의 구조적인 한계를 극복하고 수 많은 동시 연결도 버틸 수 있는 구조로 만들어졌다.  
+Nginx는 이러한 C10K 문제를 보완하고자 등장하게 되었다. Apache의 구조적인 한계를 극복하고 수 백만의 동시 커넥션도 버틸 수 있는 구조로 설계되었다.  
 
 <br />  
 
-### Nginx 구조
-NginX는 **비동기 이벤트 기반구조**{: .font-highlight}로 만들어졌다. 쉽게 말해 요청(이벤트)을 비동기로 처리함으로써 컴퓨팅 자원을 효율적으로 활용할 수 있도록 만든 구조이다. 정의 자체가 어려운 단어의 연속이니 차근차근 구조를 알아가며 살펴보자.  
+### Nginx Connection 처리구조
+NginX는 **비동기-논블로킹 이벤트 기반구조**{: .font-highlight}로 만들어졌다. 쉽게 말해 요청(이벤트) 처리 시 블로킹하지 않고 처리함으로써 컴퓨팅 자원을 효율적으로 활용할 수 있도록 만든 구조이다. 정의만 보고 감을 잡기가 쉽지 않다. 차근차근 살펴보도록 하자.
 
-Nginx 내부 구조에는 Master Process라고 불리는 관제탑이 존재한다. Master Process는 Nginx의 설정에 따라 Worker Process를 만드는 역할을 담당한다. Worker Process는 클라이언트의 Connection과 Request를 받아 처리하는 작업 프로세스이다. 
+우선, Nginx가 처음 실행될 때 무슨 일이 일어나는지 살펴보자. Nginx는 처음 실행 시 하나의 `Master Process`가 동작한다. `Master Process`는 Nginx의 관제탑 역할을 담당한다. Master Process의 역할을 나열해보자면 다음과 같다.  
 
-![master, worker Process 보여주기](https://github.com/AUSG/2023-No-Remember-Yes-Record/assets/52196792/b81ab8e9-d391-4ed0-bdf1-c7ea9191897f){: .align-center style="width: 70%;"}  
-Master Process와 Worker Process의 관계
+> - nginx 설정 파일 읽기
+- 포트를 열고 socket을 생성, 바인딩, 닫기
+- **위 과정 진행 후 `Worker Process` 생성**  
+- 서비스 중단없이 재구성 실행
+
+`Master Process`는 실행되면 설정 파일(`nginx.conf`)을 읽고 정보에 맞춰 Listening Port를 열고 Listen Socket을 만들어 Port에 바인딩 한다. 이 후 설정 파일에 정의한 수(보통 CPU 코어 수) 만큼 `Worker Process`을 생성한다. **`Worker Process`는 실제로 클라이언트의 연결, 요청을 처리하는 역할을 맡는 작업 프로세스**이다. `Worker Process`가 클라이언트의 요청을 받을 수 있도록 `Master Process`는 생성한 Socket들을 각 `Worker Process`에 배정한다.  
+
+![Master Process의 동작](){: .align-center style="width: 50%;"}  
+Master Process와 Worker Process
 {: .image-caption style="font-size: 14px;" }  
 
-일전에 Apache에서는 Connection당 Process가 붙어 작업을 처리하였지만 Nginx에서는 Process의 수가 고정적(보통 CPU 코어의 갯수와 같다)이다. 뿐만 아니라 하나의 Worker Process가 다수의 Connection을 담당한다.
+물론 `Master Process`와 `Worker Process` 외에도 `Cache-Loader Process`와 `Cache-Manager Process`도 존재하지만 요청 처리 구조를 설명하는데 함께 이야기하면 복잡해지므로 잠시 생락한다. 이렇게 하면 클라이언트 요청을 받기 위한 준비 작업이 완료된다.  
 
-![OS 커널 Queue를 이용하는 모습, 처리시간이 긴 요청을 처리하는 쓰레드를 던지는 모습](https://github.com/AUSG/2023-No-Remember-Yes-Record/assets/52196792/7d514b28-ba0c-4088-93ed-1e03a46a2eb1){: .align-center style="width: 70%;"}  
-Nginx가 이벤트를 처리하는 방식
+이제 연결요청을 처리하는 구조를 살펴보자. 클라이언트의 연결요청이 Port를 통해 들어오면 OS 커널은 연결된 Socket 중 적당한 하나를 골라 들어온 요청을 보낸다.(OS 커널은 보통 라운드 로빈 알고리즘을 통해 각 소켓에 연결을 분배한다) `Worker Process`는 **자신에게 배정된 Socket으로 이벤트가 들어오면 해당 이벤트를 처리**한다. 여기서 이벤트란, Socket으로부터 들어오는 Connection 할당, Request 등 모든 요청을 의미한다. **`Worker Process`는 들어온 이벤트들을 큐 형태로 쌓아 하나씩 작업을 처리**한다.  
+
+`Worker Process`는 **싱글 스레드 내에서 들어온 이벤트들을 큐에 쌓고 이벤트 루프가 큐의 값을 꺼내 비동기 처리가 필요한 것들을 블로킹하지 않고 비동기 I/O**{: .font-highlight}(OS 커널 수준의 매커니즘을 이용. 즉, 커널에 맡김) 처리 한다. 덕분에 요청을 처리하는데 멈춤없이 다음 작업을 처리할 수 있다.  
+
+![이벤트 큐와 이벤트 루프](){: .align-center style="width: 70%;"}  
+Worker Process의 이벤트큐와 이벤트 루프
 {: .image-caption style="font-size: 14px;" }  
 
-이러한 방식은 Process로 인한 메모리의 낭비(Process는 생성될 때마다 그 정보가 메모리에 쌓인다.)가 적을 뿐만 아니라 CPU의 유휴시간을 극적으로 줄일 수 있다. CPU의 관점에서 Apache의 멀티프로세스 방식과 Nginx의 비동기 이벤트 구조의 차이를 보면 CPU의 유휴시간을 최소한으로 줄여 더 많은 작업을 처리하는 것을 알 수 있다. 
+Nginx의 장점은 **싱글 스레드로 동작하며 요청을 논블로킹 처리한다는 것**{: .font-highlight}에 있다. Apache 같은 경우 커넥션당 Process를 생성한다. 때문에 하나의 CPU 코어가 여러개의 Process를 담당하고 Process간 Context Switching 비용이 많이 발생한다. 하지만 **Nginx는 보통 코어 당 하나의 Worker Process가 붙고 Worker Process는 싱글 스레드로 동작하여 Context Switching 비용이 거의 들지 않는다.**  
 
-![CPU 관점에서 보는 비동기 이벤트 처리의 장점]()
+또한 비동기 요청을 논블로킹으로 처리함으로써 들어오는 요청을 막힘없이 처리할 수 있다.
 
+![싱글 스레드 처리의 장점](https://github.com/kids-ground/mentos-backend/assets/52196792/3e459626-2fd0-4526-bedc-cd00aa651dab){: .align-center style="width: 70%;"}  
+멀티 프로세스 vs Nginx의 요청처리
+{: .image-caption style="font-size: 14px;" }  
 
 <br /> 
 
@@ -80,8 +94,7 @@ Apache가 Nginx에 비해 가지는 장점
 <br />  
 
 **참고**  
-- https://www.youtube.com/watch?v=6FAwAXXj5N0&t=6s
-- http://www.opennaru.com/jboss/apache-prefork-vs-worker/
-- https://applefarm.tistory.com/137
-- [Nginx Blog](https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/)
-- https://aosabook.org/en/v2/nginx.html
+- [Inside NGINX: How We Designed for Performance & Scale](https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/)
+- [The Architecture of Open Source Applications (Volume 2) nginx](https://aosabook.org/en/v2/nginx.html)
+- [Apache httpd – Prefork MPM 과 Worker MPM 의 비교](http://www.opennaru.com/jboss/apache-prefork-vs-worker/)
+- [피케이의 Nginx](https://www.youtube.com/watch?v=6FAwAXXj5N0&t=6s)
