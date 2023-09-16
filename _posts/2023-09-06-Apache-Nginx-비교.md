@@ -58,7 +58,7 @@ NginX는 **비동기-논블로킹 이벤트 기반구조**{: .font-highlight}로
 
 `Master Process`는 실행되면 설정 파일(`nginx.conf`)을 읽고 정보에 맞춰 Listening Port를 열고 Listen Socket을 만들어 Port에 바인딩 한다. 이 후 설정 파일에 정의한 수(보통 CPU 코어 수) 만큼 `Worker Process`을 생성한다. **`Worker Process`는 실제로 클라이언트의 연결, 요청을 처리하는 역할을 맡는 작업 프로세스**이다. `Worker Process`가 클라이언트의 요청을 받을 수 있도록 `Master Process`는 생성한 Socket들을 각 `Worker Process`에 배정한다.  
 
-![Master Process의 동작](){: .align-center style="width: 50%;"}  
+![Master Process의 동작](https://github.com/kids-ground/mentos-backend/assets/52196792/a60bc99d-a561-46c6-9cf2-78c0a053a5a0){: .align-center style="width: 50%;"}  
 Master Process와 Worker Process
 {: .image-caption style="font-size: 14px;" }  
 
@@ -68,7 +68,7 @@ Master Process와 Worker Process
 
 `Worker Process`는 **싱글 스레드 내에서 들어온 이벤트들을 큐에 쌓고 이벤트 루프가 큐의 값을 꺼내 비동기 처리가 필요한 것들을 블로킹하지 않고 비동기 I/O**{: .font-highlight}(OS 커널 수준의 매커니즘을 이용. 즉, 커널에 맡김) 처리 한다. 덕분에 요청을 처리하는데 멈춤없이 다음 작업을 처리할 수 있다.  
 
-![이벤트 큐와 이벤트 루프](){: .align-center style="width: 70%;"}  
+![이벤트 큐와 이벤트 루프](https://github.com/kids-ground/mentos-backend/assets/52196792/3046acbd-1753-41bd-b58d-7c13dd27547c){: .align-center style="width: 40%;"}  
 Worker Process의 이벤트큐와 이벤트 루프
 {: .image-caption style="font-size: 14px;" }  
 
@@ -80,21 +80,15 @@ Nginx의 장점은 **싱글 스레드로 동작하며 요청을 논블로킹 처
 멀티 프로세스 vs Nginx의 요청처리
 {: .image-caption style="font-size: 14px;" }  
 
-<br /> 
+<br />  
 
 ### Apache의 노력 Apache MPM
-2008년 모바일 시대. 동시 커넥션을 많이 생성하는 계기. 뿐만 아니라 브라우저에서도 성능향상을 위해 병렬적으로 커넥션 생성.
+Apache 또한 동시 처리 성능 향상을 위해 여러가지 노력을 기울이고 있다. Apache MPM(Multi-Processing Module)은 그러한 노력의 일환으로 등장하였고 현재 기존의 Prefork 방식과 함께, Worker, Event 방식을 지원하고 있다. Apaceh와 관련된 자세한 설명은 [링크](https://camelsource.tistory.com/71)로 대신한다.
 
-Apache 또한 MPM(Muli processing module)이라는 모듈을 추가해서 성능 개선. 운영을 선택할 수 있음. prefork 또는 워커 프로세스 만들기. 그래도 NginX가 크게 앞선다.
-
-Apache가 Nginx에 비해 가지는 장점
-- 다양한 OS에 안정적(NginX는 윈도우에 안정적이지 못함)
-- 모듈로 기능을 계속 추가할 수 있음.(확장성이 좋음)
 
 <br />  
 
 **참고**  
 - [Inside NGINX: How We Designed for Performance & Scale](https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/)
 - [The Architecture of Open Source Applications (Volume 2) nginx](https://aosabook.org/en/v2/nginx.html)
-- [Apache httpd – Prefork MPM 과 Worker MPM 의 비교](http://www.opennaru.com/jboss/apache-prefork-vs-worker/)
 - [피케이의 Nginx](https://www.youtube.com/watch?v=6FAwAXXj5N0&t=6s)
