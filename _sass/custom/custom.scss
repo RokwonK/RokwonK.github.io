@@ -1,0 +1,39 @@
+// custom SCSS (or CSS) goes here
+
+// 이미지 센터로
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// 이미지 캡션
+.caption-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: $font-size-4;
+  color: $grey-dk-000;
+}
+
+// 타이틀
+.head {
+  font-size: 32px;
+  font-weight: 700;
+  border-left: 5px solid;
+  border-color: $purple-100;
+  padding-left: 15px !important;
+  color: black;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+}
+
+
+$link-color: $grey-dk-100 !default;
