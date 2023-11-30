@@ -3,7 +3,7 @@
 
 h1,
 .text-alpha {
-  @include fs-8;
+  @include fs-9;
 
   font-weight: 300;
 }
@@ -11,12 +11,12 @@ h1,
 h2,
 .text-beta,
 #toctitle {
-  @include fs-6;
+  @include fs-7;
 }
 
 h3,
 .text-gamma {
-  @include fs-5;
+  @include fs-6;
 }
 
 h4,
