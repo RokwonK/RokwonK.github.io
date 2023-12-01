@@ -6,3 +6,6 @@
   {% assign color_scheme = "light" %}
 {% endif %}
 {% include css/just-the-docs.scss.liquid color_scheme=color_scheme %}
+
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
