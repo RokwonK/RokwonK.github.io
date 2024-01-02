@@ -1,0 +1,22 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+search: false
+---
+
+// $sans-serif: 'Noto Sans KR';
+// $monospace: 'Ubuntu Mono';
+// $type-size-4-5: 1.12em !default; // Ubuntu Mono is a bit small
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes"; // main partials
+// @import url(https://fonts.googleapis.com/css?family=Noto+Sans+KR);
+// @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+// @import url('https://fonts.googleapis.com/css?family=Nanum+Gothic');
+// @import url(https://fonts.googleapis.com/css?family=Noto+Sans+KR|Ubuntu+Mono);
+
+// .highlight {
+//   font-family: $monospace;
+//   font-size: $type-size-4-5;
+// }
