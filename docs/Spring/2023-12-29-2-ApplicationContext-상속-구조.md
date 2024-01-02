@@ -85,23 +85,23 @@ IntelliJ가 제공해주는 Diagram의 힘을 빌려 `AnnotationConfigServletWeb
 
 ```java
 public interface BeanFactory {  
-    String FACTORY_BEAN_PREFIX = "&";  
-
-    Object getBean(String name) throws BeansException;  
-    <T> T getBean(String name, Class<T> requiredType) throws BeansException;  
-    Object getBean(String name, Object... args) throws BeansException;  
-    <T> T getBean(Class<T> requiredType) throws BeansException;  
-    <T> T getBean(Class<T> requiredType, Object... args) throws BeansException;  
-    <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType);  
-    <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType);  
-    boolean containsBean(String name);  
-    boolean isSingleton(String name) throws NoSuchBeanDefinitionException;  
-    boolean isPrototype(String name) throws NoSuchBeanDefinitionException;  
-    boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException;  
-    boolean isTypeMatch(String name, Class<?> typeToMatch) throws NoSuchBeanDefinitionException;  
-    Class<?> getType(String name) throws NoSuchBeanDefinitionException;  
-    Class<?> getType(String name, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;  
-    String[] getAliases(String name);  
+	String FACTORY_BEAN_PREFIX = "&";  
+	
+	Object getBean(String name) throws BeansException;  
+	<T> T getBean(String name, Class<T> requiredType) throws BeansException;  
+	Object getBean(String name, Object... args) throws BeansException;  
+	<T> T getBean(Class<T> requiredType) throws BeansException;  
+	<T> T getBean(Class<T> requiredType, Object... args) throws BeansException;  
+	<T> ObjectProvider<T> getBeanProvider(Class<T> requiredType);  
+	<T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType);  
+	boolean containsBean(String name);  
+	boolean isSingleton(String name) throws NoSuchBeanDefinitionException;  
+	boolean isPrototype(String name) throws NoSuchBeanDefinitionException;  
+	boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException;  
+	boolean isTypeMatch(String name, Class<?> typeToMatch) throws NoSuchBeanDefinitionException;  
+	Class<?> getType(String name) throws NoSuchBeanDefinitionException;  
+	Class<?> getType(String name, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;  
+	String[] getAliases(String name);  
 }
 ```
 
@@ -116,22 +116,22 @@ BeanFactory는 일반적인 빈에 대한 정보를 가져올 수 있는 역할�
 
 ```java
 public interface ListableBeanFactory extends BeanFactory {  
-    boolean containsBeanDefinition(String beanName);  
-    int getBeanDefinitionCount();  
-    String[] getBeanDefinitionNames();  
-    <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType, boolean allowEagerInit);  
-    <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType, boolean allowEagerInit);  
-    String[] getBeanNamesForType(ResolvableType type);  
-    String[] getBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit);  
-    String[] getBeanNamesForType(@Nullable Class<?> type);  
-    String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit);  
-    <T> Map<String, T> getBeansOfType(@Nullable Class<T> type) throws BeansException;
-    <T> Map<String, T> getBeansOfType(@Nullable Class<T> type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException;  
-    String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType);  
-    Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeansException;  
-    <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) throws NoSuchBeanDefinitionException;  
-    <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;  
-    <A extends Annotation> Set<A> findAllAnnotationsOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;
+	boolean containsBeanDefinition(String beanName);  
+	int getBeanDefinitionCount();  
+	String[] getBeanDefinitionNames();  
+	<T> ObjectProvider<T> getBeanProvider(Class<T> requiredType, boolean allowEagerInit);  
+	<T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType, boolean allowEagerInit);  
+	String[] getBeanNamesForType(ResolvableType type);  
+	String[] getBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit);  
+	String[] getBeanNamesForType(@Nullable Class<?> type);  
+	String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit);  
+	<T> Map<String, T> getBeansOfType(@Nullable Class<T> type) throws BeansException;
+	<T> Map<String, T> getBeansOfType(@Nullable Class<T> type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException;  
+	String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType);  
+	Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeansException;  
+	<A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) throws NoSuchBeanDefinitionException;  
+	<A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;  
+	<A extends Annotation> Set<A> findAllAnnotationsOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException;
 }
 ```  
 
@@ -144,8 +144,8 @@ public interface ListableBeanFactory extends BeanFactory {
 
 ```java
 public interface HierarchicalBeanFactory extends BeanFactory {  
-    BeanFactory getParentBeanFactory();  
-    boolean containsLocalBean(String name);    
+	BeanFactory getParentBeanFactory();  
+	boolean containsLocalBean(String name);    
 }
 ```
 
@@ -162,12 +162,13 @@ public interface HierarchicalBeanFactory extends BeanFactory {
 
 ```java
 public interface ApplicationContext extends EnvironmentCapable, ListableBeanFactory, HierarchicalBeanFactory, MessageSource, ApplicationEventPublisher, ResourcePatternResolver {  
-    String getId();
-    String getApplicationName();  
-    String getDisplayName();
+	
+	String getId();
+	String getApplicationName();  
+    String getDisplayName();  
     long getStartupDate();
-    ApplicationContext getParent();
-    AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException;  
+	ApplicationContext getParent();
+	AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException;  
 }
 ```
 
@@ -192,17 +193,17 @@ refresh 단계에서 무슨 일들이 일어나는지에 대한 자세한 내용
 
 ```java
 public interface ConfigurableApplicationContext extends ApplicationContext, Lifecycle, Closeable {  
-    void setParent(@Nullable ApplicationContext parent);
-    void setEnvironment(ConfigurableEnvironment environment);  
-    void setApplicationStartup(ApplicationStartup applicationStartup);
+	void setParent(@Nullable ApplicationContext parent);
+	void setEnvironment(ConfigurableEnvironment environment);  
+	void setApplicationStartup(ApplicationStartup applicationStartup);
     void addBeanFactoryPostProcessor(BeanFactoryPostProcessor postProcessor);  
     void addApplicationListener(ApplicationListener<?> listener);  
-    void removeApplicationListener(ApplicationListener<?> listener);
+	void removeApplicationListener(ApplicationListener<?> listener);
     void setClassLoader(ClassLoader classLoader);  
-    void addProtocolResolver(ProtocolResolver resolver);  
-    void refresh() throws BeansException, IllegalStateException;  
+	void addProtocolResolver(ProtocolResolver resolver);  
+	void refresh() throws BeansException, IllegalStateException;  
     void registerShutdownHook();  
-    ConfigurableListableBeanFactory getBeanFactory() throws IllegalStateException;
+	ConfigurableListableBeanFactory getBeanFactory() throws IllegalStateException;
 }
 ```  
 
@@ -212,142 +213,3 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 이렇게 `ApplicationContext`가 실행환경으로 동작 및 설정되기 위해 어떤 종류의 인터페이스들로 구성되어 있는지를 살펴보았다. 마지막으로 나름 위 내용들을 도식화 해보았다.
 
 ![ApplicationContext 역할 정리 ](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/a239a155-39d6-4773-b674-771d8bf6b7af)
-
-
-<br /> <br />  
-
-## 상속받는 각 클래스들이 지니는 책임
----
-
-### AnnotationConfigServletWebServerApplicationContext
-`AnnotationConfigServletWebServerApplicationContext`은 Web MVC에서 사용되는 `ApplicationContext` 최종구현체이다. [Docs](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/web/servlet/context/AnnotationConfigServletWebServerApplicationContext.html)에 따르면 `@Configuration`이나 `@Component`처럼 **어노테이션 기반의 빈들을 등록하는 기능을 수행한다고 소개**한다.
-
-하지만 프로젝트 실행을 디버깅 해본 결과, 실제로 이 클래스에서 어노테이션을 스캔하는 로직들이 동작하는 걸 확인할 수는 없었다. 아무래도 개발자가 직접 사용하는 방식인 듯하다.
-
-<br />  
-
-### ServletWebServerApplicationContext
- `AnnotationConfigServletWebServerApplicationContext`가 상속받고 있는 클래스로 **내장 WebServer를 생성, 관리하는 기능을 수행하는 클래스**이다.
-
-실행 단계 중 refresh 단계에서 `createWebServer`메서드를 실행하여 WebServer를 생성, 셋팅한다.
-
-```java
-public class ServletWebServerApplicationContext extends GenericWebApplicationContext implements ConfigurableWebServerApplicationContext {  
-    private static final Log logger = LogFactory.getLog(ServletWebServerApplicationContext.class);  
-    public static final String DISPATCHER_SERVLET_NAME = "dispatcherServlet";  
-    private volatile WebServer webServer;  
-    private ServletConfig servletConfig;
-    private String serverNamespace;  
-
-    private void createWebServer() {  
-      // ...
-    }
-}
-```  
-
-<br />  
-
-### GenericWebApplicationContext
-`GenericWebApplicationContext` 는 **Servlet의 실행환경인 `ServletContext`을 관리**한다.
-
-`WebServer` 위에서 `ServletContext`가 동작하므로 `WebServer`가 생성 셋팅될때 ServletContext도 생성되어 셋팅된다. 이러한 셋팅 로직은 `ServletWebServerApplicationContext`의 `createWebServer` 메서드 내 깊숙한 곳에 존재한다.
-
-```java
-public class GenericWebApplicationContext extends GenericApplicationContext implements ConfigurableWebApplicationContext, ThemeSource {  
-
-    @Nullable  
-    private ServletContext servletContext;  
-
-    @Nullable  
-    private ThemeSource themeSource;
-}
-```  
-
-<br />  
-
-### GenericApplicationContext
-`GenericApplicationContext`는 Generic이라는 이름에서부터 유추할 수 있듯이 3종류의 최종 구현체가 모두에게 상속되는 클래스이다. 이 클래스가 바로 **실제 기능적인 빈 생성,관리를 담당하는 내부 빈팩토리를 관리하는 클래스**이다. 
-
-실제로 내부 메서드들도 대부분 내부적인 빈팩토리를 조작하는 메서드들로 구성되어 있다. 또 `BeanDefinitionRegistry` 인터페이스를 구현해 BeanDefinition 저장소임을 표방하고 있다.
-
-`DefaultListableBeanFactory` 가 내부 빈팩토리로 `ApplicationContext` 인터페이스에서 보았던 `AutoWireCapableBeanFactory`를 구현한 구현체이다.
-
-```java
-public class GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry {  
-    private final DefaultListableBeanFactory beanFactory;  
-
-    @Nullable  
-    private ResourceLoader resourceLoader;  
-    private boolean customClassLoader = false;  
-    private final AtomicBoolean refreshed = new AtomicBoolean();
-
-    @Override  
-    public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)  
-          throws BeanDefinitionStoreException {  
-        this.beanFactory.registerBeanDefinition(beanName, beanDefinition);  
-    }  
-      
-    @Override  
-    public void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {  
-        this.beanFactory.removeBeanDefinition(beanName);  
-    }  
-      
-    @Override  
-    public BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException {  
-        return this.beanFactory.getBeanDefinition(beanName);  
-    }
-}
-```  
-
-<br />  
-
-### AbstractApplicationContext
-마지막으로 `AbstractApplicationContext`이다. 이 클래스는 추상 클래스로 **`ApplicatioContext`로서 제 기능을 다하기 위한 기본적인 로직들이 구현**되어 있다. 특히 refresh()와 같은 프로젝트 실행에 대한 로직들이 **템플릿 메소드 패턴으로 되어 있어 서브클래스에서 이를 효과적으로 구현**할 수 있도록 돕는다.
-
-아래코드는 템플릿 메소드 패턴이 적용된 refresh 코드이다. 각 단계의 메서드들을 서브클래스들이 필요에 따라 오버라이딩해 필요한 로직을 작성할 수 있다. 
-
-```java
-public abstract class AbstractApplicationContext extends DefaultResourceLoader implements ConfigurableApplicationContext {
-	  // ...
-
-    @Override  
-    public void refresh() throws BeansException, IllegalStateException {  
-        this.startupShutdownLock.lock();  
-        try {  
-          // ...
-
-          // 템플릿 메소드 패턴
-          prepareRefresh();  
-          ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();  
-          prepareBeanFactory(beanFactory);  
-        
-          try {  
-              postProcessBeanFactory(beanFactory);  
-              StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");  
-
-              invokeBeanFactoryPostProcessors(beanFactory);   
-              registerBeanPostProcessors(beanFactory);  
-              beanPostProcess.end();  
-
-              initMessageSource();  
-              initApplicationEventMulticaster();  
-              onRefresh();  
-              registerListeners();  
-              finishBeanFactoryInitialization(beanFactory);  
-              finishRefresh();  
-          }  
-          // ...
-        }
-    }
-}
-```  
-
-<br />  
-
-### 정리
-복잡한 로직들을 이렇게 깔끔하고 단순하게 정리했다는게 놀랍다. 적절한 역할을 가지는 인터페이스로 나누고 각 클래스가 한 가지 책임만을 지니도록 깔끔한게 분리된 스프링 코드를 보니 새롭게 공부하는 것 같은 느낌이 든다.
-
-마지막으로 지금까지 알아본 인터페이스들과 클래스들이 가지는 핵심 역할과 책임을 도식화해보았다.
-![ApplicationContext상속구조](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/a6e3d218-e57e-48f5-aa01-725a545a99a8)  
-
-다음 포스팅은 다시 `SpringApplication` 실행으로 돌아가서 SpringApplication의 `run` 메서드에서 Application이 실행되는 과정의 코드를 살펴보도록 하자.
