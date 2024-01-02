@@ -1,20 +1,18 @@
 # main links
 main:
+  - title: "Home"
+    url: https://rokwonk.github.io
   - title: "About"
     url: /about/
   - title: "Posts"
     url: /year/
-  - title: "Categories"
-    url: /categories/
-  - title: "Tags"
-    url: /tags/
-  # - title: "Quick-Start Guide"
-  #   url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
-  # - title: "About"
-  #   url: https://mmistakes.github.io/minimal-mistakes/about/
-  # - title: "Sample Posts"
-  #   url: /year-archive/
-  # - title: "Sample Collections"
-  #   url: /collection-archive/
-  # - title: "Sitemap"
-  #   url: /sitemap/
+  - title: "GitHub"
+    url: https://github.com/rokwonk
+
+categories:
+  - title: "Spring"
+    url: /categories/spring/
+  - title: "Web & Infra"
+    url: /categories/web-infra/
+  - title: "CS"
+    url: /categories/cs/

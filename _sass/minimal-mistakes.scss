@@ -1,5 +1,5 @@
 /*!
- * Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+ * Minimal Mistakes Jekyll Theme 4.22.0 by Michael Rose
  * Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
  * Licensed under MIT (https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE)
 */
@@ -38,3 +38,24 @@
 @import "minimal-mistakes/archive";
 @import "minimal-mistakes/sidebar";
 @import "minimal-mistakes/print";
+
+
+// Custom
+
+.gray {
+  color: gray;
+}
+
+.image-caption {
+  text-align: center;
+  color: #afafaf;
+  font-size: 12px;
+}
+
+.font-highlight {
+  background-color: #fff5b1;
+}
+
+strong {
+  font-weight: 700;
+}
