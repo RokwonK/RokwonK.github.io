@@ -12,7 +12,7 @@ permalink: /spring/spring-boot-deep-dive-2/
 
 스프링은 스프링 컨테이너(혹은 DI 컨테이너) 라고 부르는 핵심 기술을 중심으로 동작한다. 이 컨테이너는 빈이라고 부르는 스프링 객체들의 생명주기를 관리하고 빈 간의 의존성을 관리해준다.
 
-스프링 컨테이너의 실체는 코드에서 `ApplicationContext`의 구현체로 존재한다. 이 컨테이너는 [앞선 포스팅(SpringApplication 초기화 과정 Deep Dive)](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 `SpringApplication`의 run 메서드를 통해 `ApplicationContext`가 생성 및 실행된다고 잠깐 이야기 했었다.
+스프링 컨테이너의 실체는 코드에서 `ApplicationContext`의 구현체로 존재한다. 이 컨테이너는 [앞선 포스팅(SpringApplication 초기화 과정 Deep Dive)](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication`의 run 메서드를 통해 `ApplicationContext`가 생성 및 실행된다고 잠깐 이야기 했었다.
 
 이번 포스팅에서는 실제 웹 어플리케이션에서 동작하는 `ApplicationContext`이 어떤 상속관계로 이루어져있는지, 우리의 웹 어플리케이션은 어떤 `ApplicationContext` 구현체로 동작하는지 소스코드를 들여다보자.
 
@@ -30,7 +30,7 @@ permalink: /spring/spring-boot-deep-dive-2/
 3. `AnnotationConfigApplicationContext`
 	- 그 외
 
-[이전 포스팅](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 `SpringApplication` 생성자에서 초기화했던 `WebApplicationType`을 이용하여 셋 중 하나를 인스턴스화한다. 실제로 코드에서 어떤 구현체가 선택되어 만들어지는 지는 다음 포스팅(SpringApplication run 메서드 실행)에서 자세히 알아보도록 하자. 
+[이전 포스팅](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication` 생성자에서 초기화했던 `WebApplicationType`을 이용하여 셋 중 하나를 인스턴스화한다. 실제로 코드에서 어떤 구현체가 선택되어 만들어지는 지는 다음 포스팅(SpringApplication run 메서드 실행)에서 자세히 알아보도록 하자. 
 
 Servlet 기반 웹 어플리케이션의 구현체인 `AnnotationConfigServletWebServerApplicationContext`을 기준으로 상속관계를 들여다보자.
 

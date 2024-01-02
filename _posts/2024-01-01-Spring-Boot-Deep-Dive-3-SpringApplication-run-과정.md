@@ -10,9 +10,9 @@ permalink: /spring/spring-boot-deep-dive-3/
 
 <br />  
 
-[이전 포스팅](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 `SpringApplication` 객체가 생성되면서 어떤 것들이 초기화 되는지 살펴보았다. `SpringApplication`은 인스턴스화를 후에 곧받로 인스턴스 `run` 메서드를 실행한다.
+[SpringApplication 초기화 과정](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication` 객체가 생성되면서 어떤 것들이 초기화 되는지 살펴보았다. `SpringApplication`은 인스턴스화를 후에 곧받로 인스턴스 `run` 메서드를 실행한다.
 
-`run` 메서드에서는 **`ApplicationContext`을 생성 및 refresh한다.** (ApplicationContext이 수행하는 역할은 [이 포스팅](https://rokwonk.github.io/docs/Spring/2023-12-29-2-ApplicationContext-%EC%83%81%EC%86%8D-%EA%B5%AC%EC%A1%B0/)을 확인해보자.)
+`run` 메서드에서는 **`ApplicationContext`을 생성 및 refresh한다.** (ApplicationContext이 수행하는 역할은 [이 포스팅](https://rokwonk.github.io/spring/spring-boot-deep-dive-2/)을 확인해보자.)
 
 본격적으로 코드를 살펴보자.
 
@@ -165,7 +165,7 @@ public ConfigurableApplicationContext run(String... args) {
 ### 임시 컨텍스트 BootStrapContext 생성
 세 번째로 `BootStrapContext`를 생성하고 `ApplicationContext`의 변수를 선언한다. `BootStrapContext`는 `ApplicationContext` 생성 전에 **임시로 사용되는 Context이다. 어플리케이션 설정 및 환경설정 시에 사용**된다. `SpringApplicationRunListeners`의 `starting`과 `environmentPrepared` 두 이벤트를 처리하는데 관여한다. 각 이벤트에 대해선 이벤트 발생 로직을 설명할 때 자세히 알아보도록하자.
 
-`createBootstrapContext()`를 통해 `BootStrapContext`을 생성하는데 이때 SpringApplication 생성자에서 초기화하였던 `bootstrapRegistryInitializers`들을 실행한다. [이전 포스팅](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 보았듯 현재 버전(3.2.1)에서는 `bootstrapRegistryInitializers`들은 1개도 존재하지 않는다. 레거시로 남아있는 듯하다.  
+`createBootstrapContext()`를 통해 `BootStrapContext`을 생성하는데 이때 SpringApplication 생성자에서 초기화하였던 `bootstrapRegistryInitializers`들을 실행한다. [SpringApplication 초기화 과정](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 보았듯 현재 버전(3.2.1)에서는 `bootstrapRegistryInitializers`들은 1개도 존재하지 않는다. 레거시로 남아있는 듯하다.  
 
 <br />  
 
@@ -204,7 +204,7 @@ private void configureHeadlessProperty() {
 ### 이벤트 브로커 설정
 다섯 번째로 `SpringApplicationRunListeners`를 셋팅한다. Listeners는 각 단계마다 이벤트 메서드를 실행하는데 내부에 셋팅된 `SpringApplicationRunListener` 타입의 listener들을 실행한다. 현재 버전(3.2.1)을 기준으로는 `EventPublishingRunListener` 하나만 존재한다.
 
-`SpringApplicationRunListeners`를 셋팅하는 로직을 보면 `getSpringFactoriesInstances`를 통해 정의된 `SpringApplicationRunListener` 들을 가져온다. 해당 메서드는 [SpringApplication 초기화 과정](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 설명했듯이 `META-INF/spring.factories`에서 정의된 타입의 구현체 클래스를 가져와 인스턴스화 해준다. 
+`SpringApplicationRunListeners`를 셋팅하는 로직을 보면 `getSpringFactoriesInstances`를 통해 정의된 `SpringApplicationRunListener` 들을 가져온다. 해당 메서드는 [SpringApplication 초기화 과정](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 설명했듯이 `META-INF/spring.factories`에서 정의된 타입의 구현체 클래스를 가져와 인스턴스화 해준다. 
 
 마지막에는 모든 listener들을 하나의 클래스(`SpringApplicationRunListeners`)로 묶는다. **이벤트 실행과 관련된 책임을 하나의 클래스로 캡슐화, 위임**하는 모습을 볼 수 있다.
 
@@ -457,7 +457,7 @@ public ConfigurableApplicationContext run(String... args) {
 <br />  
 
 ### ApplicationContext 생성
-가장 먼저, `WebApplicationType`따라 맞는 `ApplicationContext`를 생성한다. [ApplicationContext 상속관계](https://rokwonk.github.io/docs/Spring/2023-12-29-2-ApplicationContext-%EC%83%81%EC%86%8D-%EA%B5%AC%EC%A1%B0/)에서 알아보았던 **3가지 최종 구현체 중 하나를 생성**한다. 지금은 Servlet을 이용한 웹 어플리케이션이므로 `AnnotationConfigServletWebServerApplicationContext`를 생성한다.
+가장 먼저, `WebApplicationType`따라 맞는 `ApplicationContext`를 생성한다. [ApplicationContext 상속관계](https://rokwonk.github.io/spring/spring-boot-deep-dive-2/)에서 알아보았던 **3가지 최종 구현체 중 하나를 생성**한다. 지금은 Servlet을 이용한 웹 어플리케이션이므로 `AnnotationConfigServletWebServerApplicationContext`를 생성한다.
 
 ```java
 /* SpringApplication.java */
