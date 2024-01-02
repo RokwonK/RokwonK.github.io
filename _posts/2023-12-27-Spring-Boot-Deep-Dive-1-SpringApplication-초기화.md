@@ -48,12 +48,10 @@ public static ConfigurableApplicationContext run(Class<?>[] primarySources, Stri
 
 SpringApplication의 생성자를 보면 **어플리케이션 타입추론, Initializer들 등록, Listener 등록, 메인클래스의 타입추론**이 이루어진다. Spring Boot 2.7.x 버전까지만 해도 `ApplicationContextFactory`와 `ApplicationStartup`에 대한 셋팅도 생성자에서 이루어졌지만 현재(3.2.1)는 선언과 동시에 초기화되도록 바뀌었다. 이제 생성자 코드를 하나씩 살펴보자.
 
-{: .important}
 > **ApplicationContextFactory**
 > 
 > `ApplicationContextFactory`는 `ApplicationContext` 객체를 생성하는 팩토리 클래스이다. `ApplicationStartup.DEFAULT`를 내부를 보면 구현체인 `DefaultApplicationContextFactory`를 사용하는 것을 볼 수 있다. 후에 `run` 인스턴스 메서드 실헹 시 사용된다.
 
-{: .important}
 > **ApplicationStartup**
 > 
 > `ApplicationStartup`은 진단, 측정 시간을 계측할 수 있게 도와주는 측정 도구이다. SpringApplication이 실행되는 과정을 여러 단계로 나누어서 측정하는데 사용된다. 실제로 코드 중간 중간 `ApplicationStartup`을 이용해서 태깅하는 것을 볼 수 있다.  
@@ -326,7 +324,7 @@ private Optional<Class<?>> findMainClass(Stream<StackFrame> stack) {
 }
 ```
 
-
+<br />  
 
 ### 정리
 `SpringApplication`의 생성 과정에 대해서 알아보았다. 우리가 메인함수에서 `SpringApplication.run` 메서드를 실행하면 가장 먼저 `SpringApplication` 객체가 생성된다. 그리고 생성자에서 다음과 같은 일이 벌어진다.

@@ -32,7 +32,7 @@ permalink: /spring/spring-boot-deep-dive-2/
 
 [이전 포스팅](https://rokwonk.github.io/docs/Spring/2023-12-27-1-SpringApplication-%EC%B4%88%EA%B8%B0%ED%99%94-%EA%B3%BC%EC%A0%95/)에서 `SpringApplication` 생성자에서 초기화했던 `WebApplicationType`을 이용하여 셋 중 하나를 인스턴스화한다. 실제로 코드에서 어떤 구현체가 선택되어 만들어지는 지는 다음 포스팅(SpringApplication run 메서드 실행)에서 자세히 알아보도록 하자. 
 
-이중에서 가장 오랜시간 사용된 Servlet 기반 웹 어플리케이션의 구현체인 `AnnotationConfigServletWebServerApplicationContext`을 기준으로 깊숙이 들어가보자.
+Servlet 기반 웹 어플리케이션의 구현체인 `AnnotationConfigServletWebServerApplicationContext`을 기준으로 상속관계를 들여다보자.
 
 <br />  
 
@@ -67,7 +67,7 @@ IntelliJ가 제공해주는 Diagram의 힘을 빌려 `AnnotationConfigServletWeb
 <br />  
 
 ## ApplicationContext의 역할
----
+
 ### 단일 빈 검색을 담당하는 BeanFactory
 상속 구조의 가장 꼭대기에는 `BeanFactory`가 있다. 보통 Spring Container에 대해 이야기하면 나오는 그 `BeanFactory`가 맞다. 왜 그런 이야기가 나오느냐 하면 `BeanFactory`의 메서드를 살펴보면 잘 알 수 있다. **단일 빈을 가져오거나 빈에 대한 정보를 확인할 수 있는 역할**을 가지고 있다. 말 그대로 빈 공장이 가져야할 역할을 가지고 있다.
 
@@ -205,7 +205,6 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 <br /> <br />  
 
 ## 상속받는 각 클래스들이 지니는 책임
----
 
 ### AnnotationConfigServletWebServerApplicationContext
 `AnnotationConfigServletWebServerApplicationContext`은 Web MVC에서 사용되는 `ApplicationContext` 최종구현체이다. [Docs](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/web/servlet/context/AnnotationConfigServletWebServerApplicationContext.html)에 따르면 `@Configuration`이나 `@Component`처럼 **어노테이션 기반의 빈들을 등록하는 기능을 수행한다고 소개**한다.
