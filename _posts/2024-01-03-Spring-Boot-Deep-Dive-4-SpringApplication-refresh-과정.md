@@ -413,26 +413,122 @@ class ConfigurationClassParser {
 			- `ComponentScanAnnotationParser`를 통한 컴포넌트 스캔으로 빈들을 불러옴
 			- `DeferredImportSelectorHandler`를 통해 `AutoConfigurationImportSelector`를 읽어와 AutoConfiguration 빈 클래스들을 불러옴
 		- `ConfigurationClassBeanDefinitionReader`를 통한 파싱한 클래스들을`BeanDefinition`로 등록
-	- 추가적으로 4순위로 `PropertySourcesPlaceholderConfigurer`가 실행된다.
+	- (추가) 4순위로 `PropertySourcesPlaceholderConfigurer`가 실행된다.
 		- `PropertySourcesPropertyResolver`를 이용하여 `@Value`에 환경설정 값들을 추가한다.
 
 <br />  
 
-### 빈 생성 후처리기 등록
-(작성예정)
-- registerBeanPostProcessors
+### BeanPostProcessor 등록
+`BeanPostProcessor`는 빈 생성 이후 초기화 전후로 진행할 로직들이 들어간다. 빈 생성은 refresh의 마지막 단계에서 이루어진다.
 
+`BeanFactoryPostProcessor`를 실행할 때 사용했던 `PostProcessorRegistrationDelegate`에게 `BeanPostProcessor` 등록을 위임한다.
+
+```java
+/* AbstractApplicationContext */
+
+protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {  
+	PostProcessorRegistrationDelegate.registerBeanPostProcessors(beanFactory, this);  
+}
+```
+
+위 메서드 내부에서는 `PostProcessorRegistrationDelegate`의 메서드 `invokeBeanFactoryPostProcessors`와 마찬가지로 우선순위(PriorityOrdered 타입 - Ordered 타입 - 나머지 순)를 나누어 순위대로 `BeanPostProcessor`를 등록한다.
+
+대표적으로 다음과 같은 `BeanPostProcessor`가 등록된다. 
+- `AutowiredAnnotationBeanPostProcessor`
+	- `@Autowired` 어노테이션을 처리하여 **의존성 주입처리**
+- `PersistenceAnnotationBeanPostProcessor`
+	- JPA 사용 시 적용되는 것으로 **EntityManager 주입**을 위한 `@PersistenceContext` 어노테이션 처리 
+- `ConfigurationPropertiesBeanPostProcessor`
+	- `@ConfigurationProperties` 어노테이션을 처리하여 `PropertySource` 바인딩
+- `AnnotationAwareAspectJAutoProxyCreator`
+	- `@AspectJ`뿐만 아니라 `@Aspect`도 처리하여 **프록시 빈을 생성**
+	- 내부적으로 `ProxyFactory`를 통해 `ObjenesisCglibAopProxy`, `JdkDynamicAopProxy`를 이용해 프록시 객체를 만들어 낸다.
+
+<br />  
 
 ### 빈 정의 등록 후 서브클래스 로직 실행
-(작성예정)
-- onRefresh
+`onRefresh` 메서드는 서브클래스인 `ServletWebServerApplicationContext`에 재정의 되어 있다. `createWebServer()`라는 이름답게 웹서버를 생성하는 메서드이다. 해당 메서드 내부에서는 `getWebServer()`로 Tomcat등의 설정한 웹서버가 만들지면서 동시에 `ServletContext`(서블릿 실행환경)도 띄워진다. 이때 `ServletContextInitializer`라는 콜백 함수를 넘겨서 `ServletContext`를 생성되면 멤버 변수에 `ServletContext`를 저장한다.(해당 변수는 `ServletWebServerApplicationContext`의 부모 클래스인 `GenericWebApplicationContext`에 존재한다.)
 
+```java
+/* ServletWebServerApplicationContext.java */
+
+@Override  
+protected void onRefresh() {  
+	super.onRefresh();  
+	try {  
+		createWebServer();  
+	}  
+	catch (Throwable ex) {  
+		throw new ApplicationContextException("Unable to start web server", ex);  
+	}  
+}
+
+private void createWebServer() {  
+	WebServer webServer = this.webServer;  
+	ServletContext servletContext = getServletContext();  
+	if (webServer == null && servletContext == null) {  
+	
+		ServletWebServerFactory factory = getWebServerFactory();  
+		
+		// WeberServer 생성 및 콜백함수로 ServletContext 생성
+		this.webServer = factory.getWebServer(getSelfInitializer());  
+		
+		getBeanFactory().registerSingleton("webServerGracefulShutdown",  
+			new WebServerGracefulShutdownLifecycle(this.webServer));  
+		getBeanFactory().registerSingleton("webServerStartStop",  
+			new WebServerStartStopLifecycle(this, this.webServer));  
+	}  
+	else if (servletContext != null) {  
+		try {  
+			getSelfInitializer().onStartup(servletContext);  
+		}  
+		catch (ServletException ex) {  
+			throw new ApplicationContextException("Cannot initialize servlet context", ex);  
+		}  
+	}  
+	initPropertySources();  
+}
+
+private org.springframework.boot.web.servlet.ServletContextInitializer getSelfInitializer() {  
+	return this::selfInitialize;  
+}  
+  
+private void selfInitialize(ServletContext servletContext) throws ServletException {
+	// 내부 멤버 변수에 servletContext 저장
+	prepareWebApplicationContext(servletContext);  
+	registerApplicationScope(servletContext);  
+	WebApplicationContextUtils.registerEnvironmentBeans(getBeanFactory(), servletContext);  
+	for (ServletContextInitializer beans : getServletContextInitializerBeans()) {  
+		beans.onStartup(servletContext);  
+	}  
+}
+
+```
+
+<br />  
 
 ### 빈 객체 생성
-(작성예정)
-- AOP 설정과 같이 프록시 빈들도 이때 생성
+등록된 `BeanDefinition`을 이용해서 실제로 빈들을 생성하는 단계이다. 빈들이 생성될 뿐만 아니라 등록한`BeanPostProcessor`들을 실행하면서 필요한 어노테이션을 처리하고 의존성을 주입하며, 필요에 의해 프록시 빈들(@Trasactional, @Aspect 어노테이션 등이 달린 클래스 및 메서드들)도 생성된다.
 
+```java
+/* ServletWebServerApplicationContext.java */
 
-### 정리
-(작성예정)
-- 
+protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {  
+	
+	// ...
+	
+	beanFactory.preInstantiateSingletons();  
+}
+```
+
+내부적으로 사용하는 `DefaultListableBeanFactory`의 `preInstantiateSingletons()`를 통해 이러한 과정들이 전부 실행된다. 결론적으로 `DefaultListableBeanFactory`가 상속 받는 클래스인 `AbstractAutowireCapableBeanFactory`의 `createBean` 메서드를 통해 빈 생성 및 `BeanFactoryPostProcessor`를 통한 의존성 주입, 프록시 빈 들이 만들어진다.
+
+이 과정이 마무리되고 나서 사용했던 자원, 캐시들을 반납하며 refresh 과정을 마무리한다. 이후에는 [SpringApplication 실행(run 과정)](https://rokwonk.github.io/spring/spring-boot-deep-dive-3/)에서 이야기한 Runner들을 실행하고 유저들의 요청을 받을 수 있는 상태가 된다.
+
+<br />  
+
+### 마무리
+지금까지 스프링 부트 프로젝트가 어떤 과정을 거치며 실행되는지에 대해 큰 흐름을 기준으로 살펴보았다. 여러 과정을 거치면서 기존의 의문점들이 많이 풀렸을 뿐만 아니라 단계마다 사용되는 각 객체들이 어떤 역할을 하는지 찾아보면서 새롭게 알게된 기능이나 API들도 여럿 있었다.
+
+생각 이상으로 배운 것들이 많아 앞으로도 개발을 하면서 동작과정에 궁금증이 생긴다면 Deep Dive 시리즈로 포스팅 해보고자 한다.
+
