@@ -149,6 +149,8 @@ blockquote {
 
 a {
   line-height: 1.5;
+  text-decoration-line: none;
+  
   &:focus {
     @extend %tab-focus;
   }
@@ -189,12 +191,12 @@ li > code,
 figcaption > code,
 td > code {
   font-size: 0.85em;
-  padding: 0.15em 0.05em 0.15em 0.05em;
+  padding: 0.15em 0.25em 0.15em 0.25em;
   margin-right: 0.1em;
   font-family: $monospace;
   font-weight: 500;
   background-color: $code-background-color-dark;
-  color: $text-color;
+  color: $code-text-color;
   border-radius: 2px;
   
   &:before,

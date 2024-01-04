@@ -5,12 +5,12 @@
 /* Colors */
 $background-color: #ffffff !default;
 $text-color: rgb(7, 7, 7) !default;
+$code-text-color: rgb(217, 10, 10) !default;
 $primary-color: #199d10 !default;
 
 $border-color: mix(#fff, $background-color, 20%) !default;
-// $code-background-color: #fafafa !default;
 $code-background-color: #2e3c43 !default; // rgba(185, 185, 185, 0.2) !default; // rgba(240, 240, 240, 0.5);
-$code-background-color-dark: rgba(185, 185, 185, 0.25) !default;
+$code-background-color-dark: rgba(185, 185, 185, 0.30) !default;
 
 $mark-highlight-color: rgba($primary-color, 0.15) !default;
 $block-quote-background-color: rgba($primary-color, 0.1) !default;
@@ -33,6 +33,8 @@ $yiq-contrasted-light-default: #fff !default;
 $yiq-contrasted-threshold: 175 !default;
 $yiq-debug: false !default;
 
+
+/* plum syntax highlighting (base16) */
 $base00: #263238 !default;
 $base01: #2e3c43 !default;
 $base02: #314549 !default;
@@ -77,9 +79,11 @@ $base0f: #ff5370 !default;
 }
 
 .page__content {
+  color: #2e3c43;
+
   a,
   a:visited {
-    color: inherit;
+    color: $primary-color;
   }
 }
 
