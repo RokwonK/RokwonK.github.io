@@ -12,9 +12,7 @@ permalink: /spring/spring-boot-deep-dive-3/
 
 [SpringApplication 초기화 과정](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication` 객체가 생성되면서 어떤 것들이 초기화 되는지 살펴보았다. `SpringApplication`은 인스턴스화를 후에 곧받로 인스턴스 `run` 메서드를 실행한다.
 
-`run` 메서드에서는 **`ApplicationContext`을 생성 및 refresh한다.** (ApplicationContext이 수행하는 역할은 [이 포스팅](https://rokwonk.github.io/spring/spring-boot-deep-dive-2/)을 확인해보자.)
-
-본격적으로 코드를 살펴보자.
+`run` 메서드 내부에서는 단계별로 여러가지 일을 수행한다. (ApplicationContext이 수행하는 역할은 [ApplicationContext 상속구조](https://rokwonk.github.io/spring/spring-boot-deep-dive-2/)를 확인해보자.) `run` 메서드 내부에서 수행하는 작업들을 소스코드를 통해 알아보자.
 
 > Spring Boot 3.2.1 버전을 기준으로 작성되었습니다.
 

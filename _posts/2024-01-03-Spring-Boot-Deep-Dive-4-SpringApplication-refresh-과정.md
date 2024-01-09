@@ -13,9 +13,9 @@ permalink: /spring/spring-boot-deep-dive-4/
 
 main 함수에서 `SpringApplication`의 static 메서드 run을 실행하면 SpringApplication 객체가 필요한 데이터를 초기화하면서 생성된다. 이후에는 인스턴스 `run` 메서드를 실행하는데 환경변수 설정 및 실행환경인 `ApplicationContext`을 생성한다. `ApplicationContext`는 스프링 어플리케이션에서 Spring Container, DI Container라 불리며 스프링의 객체인 Bean에 대한 관리를 담당한다.
 
-[이전 포스팅(Application 실행과정)](https://rokwonk.github.io/spring/spring-boot-deep-dive-3/)에서는 전체적으로 큰 흐름에 대해서 이야기 했다면, 이번 포스팅에서는 실제적으로 빈이 구성되는 단계인 refresh에 대해서 딥하게 들어가보자.
+[SpringApplication 실행과정](https://rokwonk.github.io/spring/spring-boot-deep-dive-3/)에서 ApplicationContext의 refresh 메서드를 통해 빈들이 구성된다고 언급하였는데 이번 포스팅에서는 어떤 과정이 일어나는지 자세하게 알아보자.
 
-여담으로 이번 글은 *'Spring Boot Deep Dive 시리즈'* 를 포스팅하기 시작한 이유이기도 하다. **'컴포넌트 스캔과 자동구성은 대체 어디서 동작하는거지?'** 라는 궁금증에서 시작해서 하나씩 뜯어보다 드디어 기존의 궁금증을 해소할 수 있었다. 만약 필자와 같은 의문을 가졌던 분들이 계시다면 이번 포스팅을 통해 궁금증을 조금이나마 해소할 수 있으면 좋겠다.
+여담으로 이번 글은 *'Spring Boot Deep Dive 시리즈'* 를 포스팅하기 시작한 이유이기도 하다. **'컴포넌트 스캔과 자동구성은 대체 어디서 동작하는거지?'** 라는 궁금증에서 시작해서 소스코드를 들여다보다가 드디어 기존의 궁금증을 해소할 수 있었다. 만약 필자와 같은 의문을 가졌던 분들이 계시다면 이번 포스팅을 통해 궁금증을 조금이나마 해소할 수 있으면 좋겠다.
 
 > Spring Boot 3.2.1 버전을 기준으로 작성되었습니다.
 

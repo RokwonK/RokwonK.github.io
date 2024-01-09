@@ -12,9 +12,9 @@ permalink: /spring/spring-boot-deep-dive-2/
 
 스프링은 스프링 컨테이너(혹은 DI 컨테이너) 라고 부르는 핵심 기술을 중심으로 동작한다. 이 컨테이너는 빈이라고 부르는 스프링 객체들의 생명주기를 관리하고 빈 간의 의존성을 관리해준다.
 
-스프링 컨테이너의 실체는 코드에서 `ApplicationContext`의 구현체로 존재한다. 이 컨테이너는 [앞선 포스팅(SpringApplication 초기화 과정 Deep Dive)](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication`의 run 메서드를 통해 `ApplicationContext`가 생성 및 실행된다고 잠깐 이야기 했었다.
+스프링 컨테이너의 실체는 코드에서 `ApplicationContext`의 구현체로 존재한다. 이 컨테이너는 [앞선 포스팅(SpringApplication 객체 생성 과정)](https://rokwonk.github.io/spring/spring-boot-deep-dive-1/)에서 `SpringApplication`의 run 메서드를 통해 `ApplicationContext`가 생성 및 실행된다고 잠깐 이야기 했었다.
 
-이번 포스팅에서는 실제 웹 어플리케이션에서 동작하는 `ApplicationContext`이 어떤 상속관계로 이루어져있는지, 우리의 웹 어플리케이션은 어떤 `ApplicationContext` 구현체로 동작하는지 소스코드를 들여다보자.
+이번 포스팅에서는 실제 웹 어플리케이션에서 동작하는 `ApplicationContext`이 어떤 상속관계로 이루어져있는지, 각 서브클래스는 어떤 역하을 가지고 있는지를 소스코드를 통해 들여다보자.
 
 {: .important}
 > Spring Boot 3.2.1 버전을 기준으로 작성되었습니다.
