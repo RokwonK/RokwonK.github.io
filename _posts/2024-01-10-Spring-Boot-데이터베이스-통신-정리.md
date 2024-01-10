@@ -14,17 +14,21 @@ permalink: /spring/spring-boot-deep-dive-4/
 
 JDBC부터 시작해서 DataSource, JPA, 트랜잭션 동기화까지 하나씩 살펴보자
 
+<br />  
 
 ## JDBC
----
 JDBC(Java Database Connectivity)는 자바에서 데이터베이스와 상호작용할 수 있게 도와주는 표준 API이다. 추상화된 JDBC API를 이용해 우리는 데이터베이스와 연결하고 SQL을 실행 및 결과를 받을 수 있다. **이런 JDBC의 가장 큰 장점은 통일된 인터페이스를 이용해 다양한 데이터베이스와의 상호작용을 동일한 방식한 방식으로 통신할 수 있도록 도와준다는 것이다.**
 
 Oracle, MySQL 등 각 데이터베이스마다 프로토콜(SQL전달 및 응답처리)이 조금씩 다르다. 때문에 통일된 인터페이스를 제공하지 않는다면 각 데이터베이스에 의존된 코드를 작성할 수 밖에 없다. JDBC 덕분에 개발자는 데이터베이스 종류에 따른 의존도를 줄일 수 있다. 
 
+<br />  
+
 ### Driver - DB연결 추상화
 JDBC는 `Driver`라는 인터페이스를 통해 데이터베이스 연결을 추상화한다. 각 데이터베이스용 Driver를 상속받는 구현체가 존재하고 개발자는 DriverManager 클래스를 통해 커넥션을 얻어 데이터베이스와 상호작용할 수 있다. 
 
-![JDBC|0x500](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/149631c6-6221-4ec4-839c-0604759c7c38)
+![JDBC](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/149631c6-6221-4ec4-839c-0604759c7c38){: .align-center style="width: 50%;"}  
+JDBC
+{: .image-caption style="font-size: 14px;" }  
 
 
 통신할 데이터베이스에 맞는 Driver를 다운받기만 하면 DriverManager에서 이를 자동으로 인식하고 Connection을 받아올 수 있다. 아래 코드는 JDBC를 이용하여 MySQL 데이터베이스와 통신하는 과정이다.
@@ -96,9 +100,9 @@ public class JDBCDemo {
 
 JDBC 덕분에 데이터베이스와의 의존성은 확실히 줄어들었지만 보다시피 한 번의 통신에 코드에 양이 방대하다. 연결 설정, 자원반납 부분에서 보일러 플레이트 코드들이 보이고 결과를 처리하는 부분에서도 자료형, 데이터 검증의 필요성이 느껴진다. 무엇보다도 *데이터베이스 커넥션에 대한 관리*가 필요해 보인다.
 
+<br />  
 
 ## DataSource
----
 JDBC API에서 DB와 통신이 필요할 때 `DriverManager`를 통해 커넥션을 얻어왔다. 이 방식은 요청시 마다 커넥션을 생성하는데 이런 경우에 몇 문제점이 존재한다.
 1. DB와의 커넥션은 그 생성 비용이 크다. 
 2. 무분별한 커넥션 생성은 데이터베이스에 큰 부하를 줄 수 있다.
@@ -106,6 +110,7 @@ JDBC API에서 DB와 통신이 필요할 때 `DriverManager`를 통해 커넥션
 
 이러한 문제 때문에 **데이터베이스와의 커넥션을 관리하는 계층**을 하나 두는데 이 계층이 바로 `DataSource`이다. `DataSource` 또한 추상화된 계층으로 필요에 따라 다른 커넥션을 관리하는 방식을 사용할 수 있다. 대표적인 구현체로는 DriverManagerDataSource와 HikariDataSource가 있다.
 
+<br />  
 
 ### HikariDataSource와  Connection Pool
 `DriverManagerDataSource`는 기존 `DriverManager`에 비해 커넥션에 대한 설정을 중앙 관리해준다. 테스트용도로만 사용한다고 하니 참고만 해두자.
@@ -114,7 +119,9 @@ JDBC API에서 DB와 통신이 필요할 때 `DriverManager`를 통해 커넥션
 
 Connection Pool은 어플리케이션이 실행될 때, **미리 설정된 갯수만큼의 커넥션을 만들어 저장해 두는 공간**이다. 만약 어플리케이션에서 커넥션을 사용하고자 한다면 이 Connection Pool에서 커넥션을 꺼내 사용한 뒤 할당을 해제하는게 아니라 Connection Pool에 반납한다. 반납한 커넥션은 다른 요청에서 재사용된다. Connection Pool 덕분에 커넥션 생성 비용을 줄일 수 있다. 
 
-![ConnectionPool](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/5a945227-2754-4b2c-a614-5b0fc5b80dd4)
+![Connection Pool](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/5a945227-2754-4b2c-a614-5b0fc5b80dd4){: .align-center style="width: 90%;"}  
+Connection Pool
+{: .image-caption style="font-size: 14px;" }  
 
 `HikraiDataSource`는 Connection Pool 외에도 여러가지 기능으로 커넥션을 관리해준다.
 1. Connection Pool의 커넥션을 모두 사용했을 경우 추가적인 커넥션 생성 가능
@@ -156,17 +163,18 @@ public class DatabaseExample {
 
 자원 할당 해제하는 부분만 Java7부터 지원되는 `try-with-resources`를 이용하여 간결하게 표현하였다.
 
-> **try-with-resources**
+> **try-with-resources**  
 > `AutoClosable` 인터페이스를 구현한 객체들을 try 구문이 끝난후 close() 메서드를 호출해준다. Connection, Statement, ResultSet 모두 `AutoClosable`를 구현한다.
 
 지금까지의 Driver와 DataSource를 도식화해보면 다음과 같다.
 
-![Datasource](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/7dbb3b48-a24c-4566-8454-63f6163e1226)
+![Datasource](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/7dbb3b48-a24c-4566-8454-63f6163e1226){: .align-center style="width: 70%;"}  
+DataSource
+{: .image-caption style="font-size: 14px;" }  
 
-
+<br />
 
 ## JPA
----
 JDBC가 편리한 데이터베이스 소통을 지원해주지만 실제로 어플리케이션을 개발할때 여러가지로 생산성이 떨어지는 문제점들이 있다.
 - 다양한 트랜잭션 처리에 대한 복잡도
 	- DB 통신로직과 비즈니스로직의 강한 결합 트랜잭션처리를 위해 Connection을 주고 받아야함
@@ -177,14 +185,18 @@ JDBC가 편리한 데이터베이스 소통을 지원해주지만 실제로 어�
 
 위 문제점들도 AOP, 여러가지 패턴들을 도입해서 어느정도 해결할 수 있지만 SQL 쿼리를 직접 작성하는 것과 쿼리 결과를 객체로 매핑하는데 생기는 생산성 저하가 여전히 문제로 남는다.
 
-이러한 **객체지향과 관계형 데이터베이스간의 불일치를 해소하여 DB와 객체지향적인 코드로 상호작용이 가능하게 만드는 것이 객체-관계 매핑(ORM)** 이다. 스프링 진영에서는 ORM의 표준 명세로 JPA(Java Persistence API)를 지원해주고 있다.
+이러한 **객체지향과 관계형 데이터베이스간의 불일치를 해소하여 DB와 객체지향적인 코드로 상호작용이 가능하게 만드는 것이 객체-관계 매핑(ORM)** 이다. 스프링 진영에서는 ORM의 표준 명세로 JPA(Java Persistence API)를 지원해주고 있다.  
+
+<br />
 
 ### JPA의 동작
-JPA는 관계형 데이터베이스의 테이블과 객체를 매핑하며 객체지향의 방식으로 데이터베이스 통신을 도와준다. 관계형 데이터베이스에서의 테이블은 Entity라고 부르는 객체에 매핑한다. 해당 객체와 JPA가 제공하는 `EntityManager`를 통해 객체지향적인 방식으로 데이터베이스와 통신을 한다.
+JPA는 관계형 데이터베이스의 테이블과 객체를 매핑하며 객체지향의 방식으로 데이터베이스 통신을 도와준다. 관계형 데이터베이스에서의 테이블은 Entity라고 부르는 객체에 매핑한다. 해당 객체와 JPA가 제공하는 `EntityManager`를 통해 객체지향적인 방식으로 데이터베이스와 통신을 한다.
 
 `EntityManager`는 이름에서 유추할 수 있듯이 Entity를 관리하며 내부적으로 JDBC API를 사용하여 데이터베이스와 통신을 한다. 또한  **객체(Entity)와 관계형 데이터베이스 사이의 패러다임 불일치를 해결**해준다. 덕분에 JPA 사용시 이 `EntityManager`가 제공하는 인터페이스만으로 대부분의 데이터베이스 통신을 객체지향적인 방식으로 사용할 수 있다.
 
 `EntityManager`에는 `PersistenceContext`라는 공간이 존재한다. 간단히 말해서, Entity 인스턴스들을 저장하고 관리하는 컨테이너이다. 이 컨테이너는 **Entity의 생명주기를 관리할 뿐 아니라 1차 캐시의 역할, 지연 로딩과 같은 장점도 제공한다.**(여러가지 생명주기 메서드에 대한 설명과 어떤 방식으로 지연로딩, 쓰기 지연이 일어나는지는 생략했다)
 
-![JPA](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/f54608c9-6c43-4d5f-9962-ca80e0b32095)
+![JPA](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/f54608c9-6c43-4d5f-9962-ca80e0b32095){: .align-center style="width: 90%;"}  
+JPA
+{: .image-caption style="font-size: 14px;" }  
 
