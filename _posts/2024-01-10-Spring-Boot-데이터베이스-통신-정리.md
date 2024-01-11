@@ -186,28 +186,96 @@ DataSource
 <br />
 
 ## JPA
-JDBC가 편리한 데이터베이스 소통을 지원해주지만 실제로 어플리케이션을 개발할때 여러가지로 생산성이 떨어지는 문제점들이 있다.
-- 다양한 트랜잭션 처리에 대한 복잡도
-	- DB 통신로직과 비즈니스로직의 강한 결합 트랜잭션처리를 위해 Connection을 주고 받아야함
-- 생산성
-	- SQL 쿼리를 직접 작성하고 관리해야하므로 더 많은 코드, 작업이 필요하다.
-- 보일러 플레이트 코드 작성
-	- 예외처리와 가튼 보일러 플레이트성 코드가 많음
+JDBC가 편리한 데이터베이스 소통을 지원해주지만 실제로 어플리케이션을 개발할때 생산성이 떨어지는 문제점들이 존재한다. 어플리케이션이 추구하는 객체지향적인 로직과는 거리가 멀고, SQL 쿼리와 쿼리결과를 비선언적인 방식으로 직접 파싱해야 한다.
 
-위 문제점들도 AOP, 여러가지 패턴들을 도입해서 어느정도 해결할 수 있지만 SQL 쿼리를 직접 작성하는 것과 쿼리 결과를 객체로 매핑하는데 생기는 생산성 저하가 여전히 문제로 남는다.
+이러한 문제점들은 AOP, 여러가지 패턴들을 도입해서 어느정도 해결할 수 있지만 SQL 쿼리를 작성하는 것과 결과를 객체로 다시 매핑하는데 생길 수 있는 실수와 생산성 저하는 여전히 문제점으로 남는다.
 
-이러한 **객체지향과 관계형 데이터베이스간의 불일치를 해소하여 DB와 객체지향적인 코드로 상호작용이 가능하게 만드는 것이 객체-관계 매핑(ORM)** 이다. 스프링 진영에서는 ORM의 표준 명세로 JPA(Java Persistence API)를 지원해주고 있다.  
+ORM(Object-Relational Mapping)은 이러한 **데이터베이스 통신과 객체 지향 프로그래밍 간의 간극을 줄이기 위해 생겨났다.**  ORM을 사용하면 데이터베이스와의 상호작용을 객체지향적인 방식으로 이용할 수 있다.
 
-<br />
+JPA(Java Persistence API)는 이러한 ORM을 구현하기 위한 표준 인터페이스로 **객체와 관계형 데이터베이스간의 불일치를 해소하고 객체로 데이터를 다룰 수 있도록 도와**준다. JPA는 인터페이스(명세)로 다양한 구현체 프레임워크가 존재하는데 흔히 Hibernate를 사용한다.
 
-### JPA의 동작
-JPA는 관계형 데이터베이스의 테이블과 객체를 매핑하며 객체지향의 방식으로 데이터베이스 통신을 도와준다. 관계형 데이터베이스에서의 테이블은 Entity라고 부르는 객체에 매핑한다. 해당 객체와 JPA가 제공하는 `EntityManager`를 통해 객체지향적인 방식으로 데이터베이스와 통신을 한다.
+<br />  
 
-`EntityManager`는 이름에서 유추할 수 있듯이 Entity를 관리하며 내부적으로 JDBC API를 사용하여 데이터베이스와 통신을 한다. 또한  **객체(Entity)와 관계형 데이터베이스 사이의 패러다임 불일치를 해결**해준다. 덕분에 JPA 사용시 이 `EntityManager`가 제공하는 인터페이스만으로 대부분의 데이터베이스 통신을 객체지향적인 방식으로 사용할 수 있다.
+### JPA로 DB와 통신하기
+JPA는 관계형 데이터베이스의 테이블과 객체를 매핑하며 객체지향의 방식으로 데이터베이스 통신을 도와준다. 관계형 데이터베이스에서의 테이블은 Entity라고 부르는 객체에 매핑한며 해당 객체와 JPA가 제공하는 `EntityManager`를 통해 객체지향적인 방식으로 데이터베이스와 통신을 한다.
 
-`EntityManager`에는 `PersistenceContext`라는 공간이 존재한다. 간단히 말해서, Entity 인스턴스들을 저장하고 관리하는 컨테이너이다. 이 컨테이너는 **Entity의 생명주기를 관리할 뿐 아니라 1차 캐시의 역할, 지연 로딩과 같은 장점도 제공한다.**(여러가지 생명주기 메서드에 대한 설명과 어떤 방식으로 지연로딩, 쓰기 지연이 일어나는지는 생략했다)
+`EntityManager`는 `EntityManagerFactory`를 통해 만들어낸다. 이 둘은 이후에 이어서 설명하니 지금은 객체지향의 방식으로 DB와 통신하는 것이 EntityManager이고 이러한 EntityManager를 만들어내는 공장이 `EntityManagerFactory`라고만 이해해두자.
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        // EntityManagerFactory 생성, EntityManager 생성
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("myPersistenceUnit");
+        EntityManager em = emf.createEntityManager();
+
+        // 트랜잭션 시작
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+
+        try {
+            // 데이터베이스에 저장할 엔티티 생성
+            Member member = new Member();
+            member.setId(1L);
+            member.setName("rokwon");
+            member.setAge(25);
+
+            // 엔티티를 영속화(Persistence Context에 추가)
+            em.persist(member);
+			
+			// Select 쿼리도 객체 이용
+	        TypedQuery<Member> query = entityManager.createQuery("SELECT m FROM Member m", Member.class);
+	        List<Member> memberList = query.getResultList();
+	        
+            tx.commit();
+        } catch (Exception e) {
+            // 예외 발생 시 롤백
+            tx.rollback();
+        } finally {
+            // EntityManager 종료
+            em.close();
+        }
+
+        // EntityManagerFactory 종료
+        emf.close();
+    }
+}
+```
+
+`EntityManagerFactory`로 `EntityManager`를 생성하고 이를 이용한다. `Member`는 Entity로 관계형 데이터베이스의 테이블과 매핑된다. create를 할때도 객체(Entity)를 사용하고 select 쿼리에서도 객체를 사용하는 것을 볼 수 있다. 
+
+`EntityManager`는 이름에서 유추할 수 있듯이 Entity를 관리하며 내부적으로 JDBC API를 사용하여 데이터베이스와 통신을 한다. 또한  **객체(Entity)와 관계형 데이터베이스 사이의 패러다임 불일치를 해결**해준다. 덕분에 JPA 사용한다면 이 `EntityManager`가 제공하는 기능으로 대부분의 데이터베이스 통신을 객체지향적인 방식으로 사용할 수 있다.
+
+> **Hibernate에서 EntityManager**  
+> Hibernate에서는 EntityManager를 Session(EntityManager를 사용받은 인터페이스)이라는 이름으로 사용한다. EntityManagerFactory는 SessionFactory라는 이름으로 사용한다. 이들의 구현체는 이름 뒤에 Impl을 붙혀서 사용하는 것을 볼 수 있다.
 
 ![JPA](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/f54608c9-6c43-4d5f-9962-ca80e0b32095){: .align-center style="width: 90%;"}  
-JPA
+JPA - EntityManager로 통신
 {: .image-caption style="font-size: 14px;" }  
 
+<br />  
+
+### EntityManager와 PersistenceContext
+`EntityManager`에는 `PersistenceContext`(이하 영속성 컨텍스트)라는 공간이 존재한다. 이 공간은 Entity(RDB의 테이블과 매핑되는 객체)들의 상태를 저장하고 관리하는 컨테이너이다.  
+
+우리는 이 Entity를 통해 데이터를 검색(select), 새로운 데이터를 생성(create), 기존의 데이터를 수정(update), 데이터를 삭제(delete) 하는데 **영속성 컨텍스트는 이 Entity의 상태를 추적하여 데이터베이스와 효율적으로 통신할 수 있도록 돕는다.**
+
+영속성 컨텍스트의 존재로 다음과 같은 이점을 얻을 수 있다.
+1. **쓰기 지연**
+	- Entity 저장(영속화)시에 곧바로 DB와 통신하지 않고 커밋 시(정확히는 flush)에 통신한다.
+	- 이후에 Entity의 데이터가 변경될 수 있다. 만약 즉시 통신한다면 2번의 쿼리가 발생되는데 쓰기 지연으로 인해 통신을 1번으로 줄일 수 있다.
+2. **변경 감지(더티 체킹)**
+	- Entity의 정보가 수정된다면 후에 커밋(정확히는 flush)시에 변경을 감지하고 수정 쿼리를 만든다.
+2. **1차 캐시**
+	- 만약 검색하고자하는 정보가 영속성 컨텍스트 내부에 있다면 이를 사용한다.
+3. **지연로딩**
+	- Entity와 연관된 객체는 한 번에 불러오지 않고 사용시에 불러올 수 있는 지연로딩을 제공한다.
+
+> **Entity의 상태**  
+> Entity는 영속성 컨텍스트와의 관계에 따라 4가지 상태로 나누어진다.
+> - 영속성 컨텍스트와 관련이 없는 순수 객체 상태인 비영속 상태
+> - 영속성 컨텍스트에 저장되어 있는 상태인 영속상태
+> - 저장되어 있다가 분리된 준영속 상태
+> - 기존 데이터를 DB에 삭제하기 위한 삭제상태
+
+<br />  
