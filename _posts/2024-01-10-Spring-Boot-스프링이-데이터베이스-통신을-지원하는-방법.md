@@ -1,6 +1,6 @@
 ---
-title: "Spring Boot - 데이터베이스 통신 정리(정리중)"
-excerpt: "스프링 어플리케이션에서 데이터베이스 통신을 지원하기 위한 여러 기술들은 어떻게 동작하는가"
+title: "Spring Boot - 스프링이 데이터베이스 통신을 지원하는 방법"
+excerpt: "JDBC부터 JPA, 트랜잭션까지.. 스프링 컨테이너는 어떻게 데이터베베이스 통신을 지원할까?"
 
 categories:
   - Spring
@@ -125,6 +125,36 @@ Connection Pool은 어플리케이션이 실행될 때, **미리 설정된 갯�
 Connection Pool
 {: .image-caption style="font-size: 14px;" }  
 
+실제로 `HikraiDataSource` 내부에서는 `HikariPool`을 유지하고 커넥션을 꺼내서 사용하는 걸 볼 수 있다.  
+
+```java
+public class HikariDataSource extends HikariConfig implements DataSource, Closeable  
+{  
+   private final HikariPool fastPathPool;  
+   private volatile HikariPool pool;  
+  
+   public HikariDataSource(HikariConfig configuration) {  
+      // 커넥션 풀 생성
+      pool = fastPathPool = new HikariPool(this);  
+   }  
+  
+   @Override  
+   public Connection getConnection() throws SQLException  
+   {  
+      // 커넥션 풀에서 커넥션 가져오기
+      if (fastPathPool != null) {  
+         return fastPathPool.getConnection();  
+      }  
+      
+      HikariPool result = pool;  
+      // ...
+  
+      return result.getConnection();  
+   }
+   // ...
+}
+```
+
 `HikraiDataSource`는 Connection Pool 외에도 여러가지 기능으로 커넥션을 관리해준다.
 1. Connection Pool의 커넥션을 모두 사용했을 경우 추가적인 커넥션 생성 가능
 2. 요청이 많아 사용할 수 있는 커넥션이 존재하지 않는 경우 대기하는 큐 존재
@@ -192,14 +222,18 @@ JDBC가 편리한 데이터베이스 소통을 지원해주지만 실제로 어�
 
 ORM(Object-Relational Mapping)은 이러한 **데이터베이스 통신과 객체 지향 프로그래밍 간의 간극을 줄이기 위해 생겨났다.**  ORM을 사용하면 데이터베이스와의 상호작용을 객체지향적인 방식으로 이용할 수 있다.
 
-JPA(Java Persistence API)는 이러한 ORM을 구현하기 위한 표준 인터페이스로 **객체와 관계형 데이터베이스간의 불일치를 해소하고 객체로 데이터를 다룰 수 있도록 도와**준다. JPA는 인터페이스(명세)로 다양한 구현체 프레임워크가 존재하는데 흔히 Hibernate를 사용한다.
+JPA(Java Persistence API)는 이러한 ORM을 구현하기 위한 표준 인터페이스로 **객체와 관계형 데이터베이스간의 불일치를 해소하고 객체로 데이터를 다룰 수 있도록 도와**준다. JPA는 인터페이스(명세)로 다양한 구현체 프레임워크가 존재하는데 흔히 Hibernate를 사용한다.  
+
+> **❗️ 이 파트에서 다루는 내용**  
+> 이 포스팅의 JPA 파트에서는 **스프링 컨테이너가 '개발자가 JPA를 사용하는데 필요한 기술들'을 어떻게 제공하는지에 포커스를 두고 설명**한다. JPA 활용을 위한 여러 가이드라인과 관련된 포스팅은 따로 작성해 볼 예정이다.  
+
 
 <br />  
 
 ### JPA로 DB와 통신하기
 JPA는 관계형 데이터베이스의 테이블과 객체를 매핑하며 객체지향의 방식으로 데이터베이스 통신을 도와준다. 관계형 데이터베이스에서의 테이블은 Entity라고 부르는 객체에 매핑한며 해당 객체와 JPA가 제공하는 `EntityManager`를 통해 객체지향적인 방식으로 데이터베이스와 통신을 한다.
 
-`EntityManager`는 `EntityManagerFactory`를 통해 만들어낸다. 이 둘은 이후에 이어서 설명하니 지금은 객체지향의 방식으로 DB와 통신하는 것이 EntityManager이고 이러한 EntityManager를 만들어내는 공장이 `EntityManagerFactory`라고만 이해해두자.
+`EntityManager`는 `EntityManagerFactory`를 통해 만들어낸다. 이 둘은 이후에 이어서 설명하니 지금은 객체지향의 방식으로 DB와 통신하는 것이 EntityManager이고 이러한 EntityManager를 만들어내는 공장이 `EntityManagerFactory`라고만 이해해두자.  
 
 ```java
 public class Main {
@@ -270,12 +304,5 @@ JPA - EntityManager로 통신
 	- 만약 검색하고자하는 정보가 영속성 컨텍스트 내부에 있다면 이를 사용한다.
 3. **지연로딩**
 	- Entity와 연관된 객체는 한 번에 불러오지 않고 사용시에 불러올 수 있는 지연로딩을 제공한다.
-
-> **Entity의 상태**  
-> Entity는 영속성 컨텍스트와의 관계에 따라 4가지 상태로 나누어진다.
-> - 영속성 컨텍스트와 관련이 없는 순수 객체 상태인 비영속 상태
-> - 영속성 컨텍스트에 저장되어 있는 상태인 영속상태
-> - 저장되어 있다가 분리된 준영속 상태
-> - 기존 데이터를 DB에 삭제하기 위한 삭제상태
 
 <br />  
