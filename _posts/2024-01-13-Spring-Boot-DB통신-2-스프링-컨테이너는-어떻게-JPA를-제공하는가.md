@@ -238,6 +238,7 @@ public Object invoke(Object proxy, Method method, Object[] args) throws Throwabl
 3. 빈 생성 이후 빈후처리기가 동작 - `PersistenceAnnotationBeanPostProcessor` 동작
 4. Persistence 어노테이션들을 읽고 주입
 	- 이때 `@PersistenceContext`에는 공유 프록시 `EntityManager` 객체가 주입됨
+	- Spring Data JPA를 사용할때 JpaRepository의 구현체인 SimpleJpaRepository에서도 `EntityManager`가 존재하는데 여기에도 이 프록시 객체가 주입됨
 5. 스프링 어플리케이션 구동 완료
 6. 요청이 들어오고 트랜잭션 시작, 프록시 `EntityManager`를 통한 DB 통신 시작
 7. 내부에서 invoke 함수 호출
