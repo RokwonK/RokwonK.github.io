@@ -119,9 +119,128 @@ JPA EntityManager
 <br />  
 
 ## JPA를 위한 컨테이너의 지원
-`application.yml` 프로퍼티 파일에 datasource에 대한 설정만 있으면 `EntityManager`를 주입받아 사용할 수 있다. 스프링 컨테이너는 실행 시 `EntityManagerFactory`와 `EntityManager`를 셋팅하고 필요에 따라 상황마다 `EntityManager`를 만들어 준다.
+`application.yml` 프로퍼티 파일에 datasource에 대한 설정만 있으면 `EntityManager`를 주입받아 사용할 수 있다. 스프링 컨테이너는 실행 시 `EntityManagerFactory`와 `EntityManager`를 셋팅하고 필요에 따라 상황마다 `EntityManager`를 만들어 준다.  
 
 <br />  
 
 ### EntityManagerFactory를 생성하는 팩토리 빈
-.. 정리중
+`EntityManagerFactory`는 컨테이너 수준에서 싱글톤 빈으로 만들어 어플리케이션 전반에 하나의 객체를 공유한다. 다만, `EntityManagerFactory`는 그 자체가 빈으로 등록되는 것이 아닌 **팩토리빈에 의해 만들어져 빈으로 등록**된다.
+
+> **FactoryBean< T > 타입**  
+> 스프링의 빈 종류에는 일반 Bean과 FactoryBean이 있다. FactoryBean은 **스프링 컨테이너에서 T 타입 빈을 생성하는 방법을 제어하고 빈의 초기화 및 설정을 담당한다**. 여러가지 외부 의존성, 외부 설정을 연결해야하는 등 복잡한 빈 설정 및 커스터마이징을 해야하는 경우에 FactoryBean을 구현하여 특정 Bean을 만들어낸다.
+
+`EntityManagerFactory`는 `LocalContainerEntityManagerFactoryBean`이라는 팩토리빈에 의해 싱글톤 빈으로 생성된다. `LocalContainerEntityManagerFactoryBean`은 **DataSource, Entity 정보를 받아 Vendor사(Hibernate 등)에 맞는 `EntityManagerFactory`를 생성**한다. 가장 많이 쓰이는 Hibernate의 구현체는 `SessionFactoryImpl`이다. 
+
+```java
+public class LocalContainerEntityManagerFactoryBean extends AbstractEntityManagerFactoryBean implements ResourceLoaderAware, LoadTimeWeaverAware {
+
+	// Entity 정보 셋팅
+	public void setManagedTypes(PersistenceManagedTypes managedTypes) {
+		this.internalPersistenceUnitManager.setManagedTypes(managedTypes);  
+	}
+	
+	// DataSource 셋팅
+	public void setDataSource(DataSource dataSource) {  
+	   this.internalPersistenceUnitManager.setDataSourceLookup(new SingleDataSourceLookup(dataSource));  
+	   this.internalPersistenceUnitManager.setDefaultDataSource(dataSource);  
+	}
+	
+	@Override  
+	protected EntityManagerFactory createNativeEntityManagerFactory() throws PersistenceException {  
+		// ... EntityManagerFactory 생성
+	}
+
+}
+```
+
+여기서 볼 수 있듯이 한 `EntityManagerFactory`당 하나의 DataSource와 연결되어 있기 때문에 만약 DB를 2개 이상 사용한다면 스프링 부트를 사용한다고 해도 `LocalContainerEntityManagerFactoryBean`를 따로 빈으로 등록해줘야한다.
+
+<br />  
+
+### 공유 EntityManager 생성과 의존성 주입
+JPA를 사용할 때, `@PersistenceUnit`, `@PersistenceContext` 어노테이션을 이용해 EntityManagerFactory와 EntityManager를 주입받는다. 이 두 어노테이션은 어플리케이션 생성 중 `PersistenceAnnotationBeanPostProcessor` 빈후처리기에 의해 처리된다.
+
+`@PersistencUnit` 어노테이션이 달리 필드에는 `LocalContainerEntityManagerFactoryBean`로 생성된 공유 EntityManagerFactory(Hibernate에서 SessionFactoryImpl)를 주입한다.
+
+`@PersistenceContext` 어노테이션에는 EntityManager(SessionImpl)를 주입하는데 여기서 **특이한 점은 SeesionImpl의 프록시 객체를 생성하여 주입한다는 것**이다. 해당 빈후처리기에서는 이 프록시 객체를 공유 EntityManager로 하여 모든 필드에 이 공유 프록시 객체를 주입한다.
+
+`PersistenceAnnotationBeanPostProcessor`의 내부 코드를 보면 먼저, 필드가 `@PersistenceContext` 어노테이션을 가지는지 확인하고 `SharedEntityManagerCreator` 객체의 createSharedEntityManager 메서드를 통해 프록시 객체를 생성한다. 
+
+```java
+/* SharedEntityManagerCreator.java */
+
+public static EntityManager createSharedEntityManager(EntityManagerFactory emf, @Nullable Map<?, ?> properties,  
+      boolean synchronizedWithTransaction, Class<?>... entityManagerInterfaces) {  
+   // ...
+   // 프록시 객체 생성
+   return (EntityManager) Proxy.newProxyInstance(  
+         (cl != null ? cl : SharedEntityManagerCreator.class.getClassLoader()),  
+         ifcs, new SharedEntityManagerInvocationHandler(emf, properties, synchronizedWithTransaction));  
+}
+
+```
+
+`EntityManager`는 트랜잭션별로 다른 EntityManager를 생성해야한다. 하지만 객체가 주입되는 시점에서 어떤 트랜잭션을 사용하게 될지 모른다. 때문에 **프록시 객체를 두고 해당 객체를 호출할때 현재 트랜잭션에서 사용되고 있는 EntityManager를 리턴하는 형식**이다.
+
+정리해보자면,
+1. 빈후처리기가 동작하는 단계에서 `PersistenceAnnotationBeanPostProcessor` 후처리기가 동작
+2. `@PersistencUnit`, `@PersistenceContext` 어노테이션 필드에 값을 주입함
+3. `@PersistenceContext` 경우엔 공유 프록시 `EntityManager`를 만들어 주입
+4. 주입받은 `EntityManager`를 사용할때 내부에서 상황(트랜잭션)에 맞는 실제 `EntityManager`를 리턴한다.
+
+> **트랜잭션별 EntityManager**  
+> 트랜잭션 내에서 어떤 `EntityManager`가 사용되고 있는지 어떻게 알고 리턴할 수 있는 걸까? 이는 트랜잭션 동기화와 관련된 내용으로 다음 포스팅에서 설명할 예정이다.
+
+<br />  
+
+### 주입 받은 EntityManager 사용하기
+ `LocalContainerEntityManagerFactoryBean` 팩토리빈을 통해 공유 `EntityManagerFactory`를 만들어 내고 이를 이용해서 모든 `@PersistenceContext` 어노테이션이 달린 `EntityManager` 필드에 공유 프록시 `EntityManager`를 주입하는 것까지 살펴보았다.
+
+이제 DB통신을 하기 위해 이 `EntityManager`를 사용해보자. createQuery 메서드를 이용하여 쿼리를 만들면 프록시 객체를 만들때 넘겨준 `SharedEntityManagerInvocationHandler` 객체의 `invoke` 함수를 호출한다. 
+
+![invoke 함수 호출](https://github.com/RokwonK/RokwonK.github.io/assets/52196792/e24b2689-6b25-478b-ae0b-7e516671f41b){: .align-center style="width: 100%;"}  
+SharedEntityManagerInvocationHandler invoke 함수
+{: .image-caption style="font-size: 14px;" }  
+
+이 invoke 함수는 내부에서 `EntityManagerFactoryUtils`를 통해서 현재 트랜잭션에서 사용중인 실제 `EntityManager`를 가져와서 메서드를 처리하는 것을 볼 수 있다. 
+
+```java
+/* SharedEntityManagerInvocationHandler 클래스 */
+
+@Override  
+@Nullable  
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {  
+	// ...
+	
+	// 현재 트랜잭션에서 사용하는 EntityManager 가져오기
+	EntityManager target = EntityManagerFactoryUtils.doGetTransactionalEntityManager(this.targetFactory, this.properties, this.synchronizedWithTransaction);  
+	
+	// ...
+   
+	try {  
+		// 메서드(createQuery) 실행
+		Object result = method.invoke(target, args);  
+		// ...
+		return result;  
+	}  
+}
+```
+
+여기서 적절한 `target`을 가져오기 위해 트랜잭션 동기화가 필요한데 이는 다음 포스팅에서 더 자세하게 알아보자.
+
+<br />  
+
+### 정리
+스프링 부트 어플리케이션을 실행하게 되면 어떤 과정을 거쳐서 우리가 사용하는 JPA가 셋팅되는지 정리해보자.
+
+1. 스프링 어플리케이션을 실행하면 AutoConfiguration을 통해 `JpaBaseConfiguration`이 빈으로 등록됨
+2. 해당 Configuration에서 `LocalContainerEntityManagerFactoryBean` 빈을 생성함
+3. 빈 생성 이후 빈후처리기가 동작 - `PersistenceAnnotationBeanPostProcessor` 동작
+4. Persistence 어노테이션들을 읽고 주입
+	- 이때 `@PersistenceContext`에는 공유 프록시 `EntityManager` 객체가 주입됨
+5. 스프링 어플리케이션 구동 완료
+6. 요청이 들어오고 트랜잭션 시작, 프록시 `EntityManager`를 통한 DB 통신 시작
+7. 내부에서 invoke 함수 호출
+	- `EntityManagerFactoryUtils`를 통해 현재 트랜잭션에서 사용중인 `EntityManager` 불러옴
+	- 실제 `EntityManager`를 통해 DB 통신
+ 8. 트랜잭션 완료 및 요청에 대한 응답 완료
