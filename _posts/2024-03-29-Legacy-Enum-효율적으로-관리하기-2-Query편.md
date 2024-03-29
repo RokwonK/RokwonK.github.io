@@ -20,7 +20,7 @@ permalink: /project/legacy-enum-management-2/
 > 요청/응답 Body, Query, Entity 부분을 각각 포스팅을 나누어 작성하였습니다.
 > - [요청/응답 Body에 포함된 Legacy Enum 관리하기](https://rokwonk.github.io/project/legacy-enum-management-1/)
 > - **(Now) Query에 포함된 Legacy Enum 관리하기**
-> - [Entity에 포함된 Legacy Enum 관리하기]()
+> - [Entity에서 DB에 사용중인 Legacy Enum 관리하기](https://rokwonk.github.io/project/legacy-enum-management-3/)
 
 <br />
 
@@ -100,6 +100,15 @@ class StringToLegacyDtoEnumConverterFactory<F>: ConverterFactory<String, F> wher
 
 ### Converter 적용하기
 WebMvc 설정에 Converter를 전역적으로 등록할 수 있다. `WebMvcConfigurer` 인터페이스를 사용하면 스프링 부트가 기존에 제공하는 기능에 더해 추가적인 커스텀 기능을 추가할 수 있다.
+
+먼저, RequestParam이나 ModelAttribute에 사용하는 Legacy Enum들에 `LegacyDtoEnum`를 상속시켜준다. Enum 클래스이자 해당 인터페이스를 상속한 타입반 Converter가 동작하도록 Converter를 만들때 제약조건을 걸어줬던 것을 기억할 것이다.
+```kotlin
+enum class AnswerSortType: LegacyDtoEnum {
+    NEWEST,
+    OLDEST,
+    BEST,
+}
+```
 
 아래와 같이 ConverterFactory를 등록하면 원하던대로 잘 동작한다.
 ```kotlin
