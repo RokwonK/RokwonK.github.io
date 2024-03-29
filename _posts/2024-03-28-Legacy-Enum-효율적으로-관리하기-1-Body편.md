@@ -20,7 +20,7 @@ permalink: /project/legacy-enum-management-1/
 > Body, Query, Entity 부분을 각각 포스팅을 나누어 작성하였습니다.
 > - **(Now) 요청/응답 Body에 포함된 Legacy Enum 관리하기**
 > - [Query에 포함된 Legacy Enum 관리하기]()
-> - [Entity에 포함된 Legacy Enum 관리하기]()
+> - [Entity에서 DB에 사용중인 Legacy Enum 관리하기]()
 
 <br />  
 
