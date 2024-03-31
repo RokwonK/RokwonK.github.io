@@ -122,6 +122,6 @@ message: class com.*.*.*.SuccessResponse cannot be cast to class java.lang.Strin
 type: ClassCastException
 ```
 
-문자열 리턴 후 공통응답형식을 적용하는 것으로 인해 발생하는 문제였다. 이에 대한 해결과정은 다음 포스트에서 작성한다.  
+문자열 리턴 후 공통응답형식을 적용하는 것으로 인해 발생하는 문제였다. 이에 대한 해결과정은 [다음 포스트](https://rokwonk.github.io/project/apply-string-response-to-dto/)에서 작성한다.  
 
 <br/>
